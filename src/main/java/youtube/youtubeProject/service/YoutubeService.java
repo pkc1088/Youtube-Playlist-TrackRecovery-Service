@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
-@Service
+//@Slf4j
+//@Service
 public class YoutubeService {
-    //@Value 어노테이션을 사용하여 application.yml에서 정의한 YouTube API 키를 주입 받음
+    /*//@Value 어노테이션을 사용하여 application.yml에서 정의한 YouTube API 키를 주입 받음
     @Value("${youtube.api.key}")
     private static String apiKey;
 
@@ -62,7 +62,7 @@ public class YoutubeService {
     public static String getPlaylistDetails(String channelId) throws IOException {
         // 1. 사용자의 플레이리스트 목록 가져오기
         YouTube.Playlists.List playlistRequest = youtube.playlists()
-                                .list(Collections.singletonList("snippet, contentDetails"));
+                                .list(Collections.singletonList("snippet,contentDetails"));
         playlistRequest.setKey(apiKey);
         playlistRequest.setChannelId(channelId);
         playlistRequest.setMaxResults(30L);  // 가져올 최대 개수 (조정 가능)
@@ -139,5 +139,5 @@ public class YoutubeService {
             return "Title: " + videoTitle + "\nURL: https://www.youtube.com/watch?v=" + videoId;
         }
         return "검색 결과가 없습니다";
-    }
+    }*/
 }

@@ -9,13 +9,13 @@ import youtube.youtubeProject.service.YoutubeService;
 
 import java.io.IOException;
 
-@Slf4j
-@RestController
-@RequiredArgsConstructor
+//@Slf4j
+//@RestController
+//@RequiredArgsConstructor
 //@RequestMapping("/youtube")
 public class YoutubeController {
 
-    private final YoutubeService youtubeService;
+    /*private final YoutubeService youtubeService;
 
     //@GetMapping
     public ResponseEntity<String> searchIdByHandler() throws IOException {
@@ -42,5 +42,5 @@ public class YoutubeController {
     //@GetMapping
     public String search(@RequestParam String keyword) {
         return "검색 키워드: " + keyword;
-    }
+    }*/
 }

@@ -3,9 +3,8 @@ package youtube.youtubeProject.controller;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import youtube.youtubeProject.service.YoutubeServiceV2;
 
 import java.io.IOException;
@@ -17,6 +16,12 @@ public class YoutubeControllerV2 {
     @Autowired
     private YoutubeServiceV2 youtubeService;
 
+//    @PostMapping("/addVideo")
+//    public String addVideoToPlaylist(@RequestParam String playlistId, @RequestParam String videoId) {
+//        return youtubeService.addVideoToPlaylist(playlistId, videoId);
+//    }
+    //http://localhost:8080/addVideo?playlistId=PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74&videoId=XPtu0i3Mjag
+
     @GetMapping("/youtube/{channelId}/playlists")
     public List<Playlist> getPlaylists(@PathVariable String channelId) throws IOException {
         return youtubeService.getPlaylistsByChannelId(channelId);
@@ -26,4 +31,11 @@ public class YoutubeControllerV2 {
     public List<Video> getVideos(@PathVariable String playlistId) throws IOException {
         return youtubeService.getVideosFromPlaylist(playlistId);
     }
+
+    @GetMapping("/youtube/search")
+    public ResponseEntity<String> searchVideo(@RequestParam String keyword) throws IOException {
+        String result = youtubeService.searchVideo(keyword);
+        return ResponseEntity.ok(result);
+    }
+    //UC6SN0-0k6z1fj5LmhYHd5UA
 }
