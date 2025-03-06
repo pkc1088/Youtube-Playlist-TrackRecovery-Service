@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Collections;
 
-@Service
+//@Service
 public class YoutubeServiceV3 {
     private final HttpTransport httpTransport = new NetHttpTransport();
     private final JsonFactory jsonFactory = new GsonFactory();

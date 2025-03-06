@@ -17,15 +17,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
-public class YoutubeServiceV4 {
+//@Service
+public class YoutubeServiceV3 {
 
     private static YouTube youtube;
 
-    @Value("${youtube.api.key}")
+//    @Value("${youtube.api.key}")
     private String apiKey;
 
-    public YoutubeServiceV4() {
+    public YoutubeServiceV3() {
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
@@ -61,7 +61,7 @@ public class YoutubeServiceV4 {
     }
 
     public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
-        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, contentDetails"));
+        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("contentDetails"));
         request.setKey(apiKey);
         request.setChannelId(channelId);
         request.setMaxResults(50L);
@@ -97,7 +97,7 @@ public class YoutubeServiceV4 {
         //JsonFactory jsonFactory = new GsonFactory();
         // YouTube 객체를 빌드하여 API에 접근할 수 있는 YouTube 클라이언트 생성
         youtube = new YouTube.Builder(new com.google.api.client.http.javanet.NetHttpTransport(), new GsonFactory(), request -> {}).build();
-                                                                                                    //jsonfactory
+        //jsonfactory
         // YouTube Search API를 사용하여 동영상 검색을 위한 요청 객체 생성
         YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
         search.setKey(apiKey);// API 키 설정

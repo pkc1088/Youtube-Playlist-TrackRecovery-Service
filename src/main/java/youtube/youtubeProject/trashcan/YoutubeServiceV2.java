@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
+//@Service
 public class YoutubeServiceV2 {
 
     private static YouTube youtube;
 
-    @Value("${youtube.api.key}")
+    //@Value("${youtube.api.key}")
     private String apiKey; // API Key는 application.properties에 설정할 것입니다.
 
     public YoutubeServiceV2() {

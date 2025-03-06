@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hello</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+<h1>Welcome Page</h1>
+<p>This is a welcome page after login success.</p>
+
+<!-- YouTube 영상을 재생목록에 추가하는 링크 -->
+<h2>Add Video to Playlist</h2>
+<p>아래 링크를 클릭하면 YouTube 재생목록에 영상을 추가합니다.</p>
+<a th:href="@{/addVideoToPlaylist(playlistId='PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74', videoId='XPtu0i3Mjag')}">영상 추가하기</a>
+</body>
+</html>

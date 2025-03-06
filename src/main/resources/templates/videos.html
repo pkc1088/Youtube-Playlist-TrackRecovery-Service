@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Videos</title>
+</head>
+<body>
+<h1>Videos</h1>
+<ul>
+    <li th:each="video : ${videos}">
+        <span th:text="${video.snippet.title}"></span>
+    </li>
+</ul>
+</body>
+</html>
