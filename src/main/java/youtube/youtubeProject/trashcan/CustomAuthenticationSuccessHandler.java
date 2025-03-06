@@ -1,5 +1,4 @@
-/*
-package youtube.youtubeProject.api;
+package youtube.youtubeProject.trashcan;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -11,7 +10,7 @@ import java.io.IOException;
 
 @Component
 public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
+/*
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -20,5 +19,5 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String videoId = "YOUR_DEFAULT_VIDEO_ID"; // 기본값 설정 또는 동적으로 받아오기
         String targetUrl = "/addVideoToPlaylist?playlistId=" + playlistId + "&videoId=" + videoId;
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
-    }
-}*/
+    }*/
+}

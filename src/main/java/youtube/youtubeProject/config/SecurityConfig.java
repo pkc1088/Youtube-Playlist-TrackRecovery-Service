@@ -11,19 +11,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-//    @Autowired
-//    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())  // 모든 요청에 인증 필요
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/addVideoToPlaylist", true) // OAuth2 로그인 성공 시 리다이렉트할 URL
-                );
-//                .oauth2Login(oauth2 -> oauth2
-//                        .successHandler(customAuthenticationSuccessHandler) // 커스텀 핸들러 사용
-//                );
+                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/addVideoToPlaylist", true));
+                // OAuth2 로그인 성공 시 리다이렉트할 URL
         return http.build();
     }
 }

@@ -1,13 +1,5 @@
-package youtube.youtubeProject.controller;
+package youtube.youtubeProject.trashcan;
 
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.service.YoutubeService;
-
-import java.io.IOException;
 
 //@Slf4j
 //@RestController

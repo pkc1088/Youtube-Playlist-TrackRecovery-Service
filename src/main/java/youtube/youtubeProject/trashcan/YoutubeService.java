@@ -1,4 +1,4 @@
-package youtube.youtubeProject.service;
+package youtube.youtubeProject.trashcan;
 
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;

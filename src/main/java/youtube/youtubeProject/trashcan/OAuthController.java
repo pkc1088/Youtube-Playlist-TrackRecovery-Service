@@ -1,4 +1,4 @@
-package youtube.youtubeProject.controller;
+package youtube.youtubeProject.trashcan;
 
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;

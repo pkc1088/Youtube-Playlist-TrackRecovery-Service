@@ -1,4 +1,4 @@
-package youtube.youtubeProject.controller;
+package youtube.youtubeProject.trashcan;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
