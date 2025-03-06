@@ -30,17 +30,18 @@ public class YoutubeControllerV4 {
     public String welcomePage() {
         return "welcome";
     }
-//    @ResponseBody
+
 //    @GetMapping("/addVideoToPlaylist")
-//    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
-//        return youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
+//    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId, Model model) {
+//        String result = youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
+//        model.addAttribute("message", result);
+//        return "result"; // 결과를 보여줄 뷰 페이지
 //    }
-    @GetMapping("/addVideoToPlaylist")
-    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
-                                     @RequestParam String playlistId, @RequestParam String videoId, Model model) {
-        String result = youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
-        model.addAttribute("message", result);
-        return "result"; // 결과를 보여줄 뷰 페이지
+
+    @PostMapping("/addVideoToPlaylist")
+    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
+        String result =  youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
+        return "redirect:/"; // 작업 완료 후 루트 페이지로 리다이렉트
     }
 
     @GetMapping("{channelId}/playlists")
@@ -63,6 +64,12 @@ public class YoutubeControllerV4 {
         model.addAttribute("result", result);
         return "search"; // search.html로 이동
     }
+
+//    @ResponseBody
+//    @GetMapping("/addVideoToPlaylist")
+//    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
+//        return youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
+//    }
 //    @ResponseBody
 //    @GetMapping("/youtube/{channelId}/playlists")
 //    public List<Playlist> getPlaylists(@PathVariable String channelId) throws IOException {

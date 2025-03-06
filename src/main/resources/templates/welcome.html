@@ -17,7 +17,41 @@
 <h2>3. See Particular Playlist items</h2>
 <a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/videos}">특정 플레이리스트 내부</a>
 
-<h2>4. Add Particular Video To Playlist</h2>
-<a th:href="@{/addVideoToPlaylist(playlistId='PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74', videoId='wtjro7_R3-4')}">영상 추가하기</a>
+<!--<h2>4. Add Particular Video To Playlist</h2>-->
+<!--<a th:href="@{/addVideoToPlaylist(playlistId='PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74', videoId='wtjro7_R3-4')}">영상 추가하기</a>-->
+
+
+
+<!-- 결과 메시지 표시 -->
+<div th:if="${message}">
+    <p th:text="${message}"></p>
+</div>
+<div th:if="${error}">
+    <p style="color: red;" th:text="${error}"></p>
+</div>
+<!-- YouTube 영상을 재생목록에 추가하는 폼 -->
+<h2>4. Add Video to Playlist</h2>
+<form action="/addVideoToPlaylist" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
+    <label for="playlistId">Playlist ID:</label>
+    <input type="text" id="playlistId" name="playlistId" required>
+    <br>
+    <label for="videoId">Video ID:</label>
+    <input type="text" id="videoId" name="videoId" required>
+    <br>
+    <button type="submit">Add Video</button>
+</form>
+
+<!-- YouTube 영상을 재생목록에 추가하는 폼
+<h2>Add Video to Playlist</h2>
+<form action="/addVideoToPlaylist" method="post">
+    <label for="playlistId">Playlist ID:</label>
+    <input type="text" id="playlistId" name="playlistId" required><br>
+    <label for="videoId">Video ID:</label>
+    <input type="text" id="videoId" name="videoId" required><br>
+    <button type="submit">Add Video</button>
+</form>-->
+
+
 </body>
 </html>
