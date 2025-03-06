@@ -1,36 +1,50 @@
 package youtube.youtubeProject.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemSnippet;
+import com.google.api.services.youtube.model.ResourceId;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 
 @Service
 public class YoutubeServiceV4 {
 
-    @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
+    public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
+        try {
+            GoogleCredential credential = new GoogleCredential().setAccessToken(authorizedClient.getAccessToken().getTokenValue());
+            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                    .setApplicationName("youtube-cmdline-addto-playlist-sample")
+                    .build();
 
-    private static final String YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true";
+            ResourceId resourceId = new ResourceId();
+            resourceId.setKind("youtube#video");
+            resourceId.setVideoId(videoId);
 
-    public String getYouTubeChannelInfo(String username) {
-        OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient("google", username);
+            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+            playlistItemSnippet.setPlaylistId(playlistId);
+            playlistItemSnippet.setResourceId(resourceId);
 
-        // 액세스 토큰을 가져옵니다.
-        String accessToken = authorizedClient.getAccessToken().getTokenValue();
+            PlaylistItem playlistItem = new PlaylistItem();
+            playlistItem.setSnippet(playlistItemSnippet);
 
-        // YouTube API에 액세스하여 채널 정보를 가져옵니다.
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
+            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
+            PlaylistItem response = request.execute();
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        String response = restTemplate.exchange(YOUTUBE_API_URL, HttpMethod.GET, entity, String.class).getBody();
-
-        return response;
+            return "Video added to playlist: " + response.getId();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Failed to add video to playlist";
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

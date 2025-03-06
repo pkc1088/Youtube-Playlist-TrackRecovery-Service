@@ -18,10 +18,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 
 import java.io.IOException;
 
-@Controller
-public class OAuth2Controller implements AuthenticationSuccessHandler {
+//@Controller
+public class OAuth2Controller{// implements AuthenticationSuccessHandler {
 
-    @Autowired
+    /*@Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
     @Autowired
@@ -57,5 +57,5 @@ public class OAuth2Controller implements AuthenticationSuccessHandler {
         // 필요한 경우 외부 서비스 호출하여 리디렉션하거나, 메인 페이지로 리디렉션
         model.addAttribute("message", "Welcome to the YouTube Project!");
         return;  // 홈 화면으로 리디렉션
-    }
+    }*/
 }
