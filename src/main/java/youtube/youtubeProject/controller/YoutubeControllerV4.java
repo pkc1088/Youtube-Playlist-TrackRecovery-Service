@@ -20,16 +20,16 @@ public class YoutubeControllerV4 {
     @Autowired
     private YoutubeServiceV4 youtubeService;
 
-    @GetMapping("/")
-    public String welcomePage() {
-        return "welcome";
-    }
 
     @GetMapping("/login")
     public String loginPage() {
         return "login"; // login.html을 반환
     }
 
+    @GetMapping("/")
+    public String welcomePage() {
+        return "welcome";
+    }
 //    @ResponseBody
 //    @GetMapping("/addVideoToPlaylist")
 //    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
@@ -43,21 +43,21 @@ public class YoutubeControllerV4 {
         return "result"; // 결과를 보여줄 뷰 페이지
     }
 
-    @GetMapping("/youtube/{channelId}/playlists")
+    @GetMapping("{channelId}/playlists")
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
         List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
         model.addAttribute("playlists", playlists);
         return "playlists"; // playlists.html로 이동
     }
 
-    @GetMapping("/youtube/playlist/{playlistId}/videos")
+    @GetMapping("{playlistId}/videos")
     public String getVideos(@PathVariable String playlistId, Model model) throws IOException {
         List<Video> videos = youtubeService.getVideosFromPlaylist(playlistId);
         model.addAttribute("videos", videos);
         return "videos"; // videos.html로 이동
     }
 
-    @GetMapping("/youtube/search")
+    @GetMapping("search")
     public String searchVideo(@RequestParam String keyword, Model model) throws IOException {
         String result = youtubeService.searchVideo(keyword);
         model.addAttribute("result", result);

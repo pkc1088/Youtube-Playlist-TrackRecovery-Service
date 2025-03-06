@@ -16,6 +16,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/login").permitAll() // 로그인되지 않은 사용자라면 /login으로 리다이렉트
+                        .anyRequest().authenticated() // login 외 모든 요청은 인증 필요
+                )
+                .formLogin(form -> form
+                        .loginPage("/login") // 커스텀 로그인 페이지 설정
+                        .permitAll() // 로그인 페이지는 누구나 접근 가능
+                        .defaultSuccessUrl("/", true) // 로그인 성공 시 루트 페이지로 리다이렉트
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login") // OAuth2 로그인도 커스텀 로그인 페이지 사용
+                        .defaultSuccessUrl("/", true) // 로그인 성공 시 루트 페이지로 리다이렉트
+                );
+
+        /*
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/login", "/welcome").permitAll() // 루트, 로그인 페이지, welcome 페이지는 인증 없이 접근 허용
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
@@ -24,17 +39,13 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form.disable() // 폼 로그인 비활성화
                 );
-
-//                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-//                .formLogin(Customizer.withDefaults())
-//                .oauth2Login(Customizer.withDefaults());
-
-        //.oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/", true));
-        //.oauth2Login(Customizer.withDefaults());
+         */
 
         return http.build();
-        /*.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())  // 모든 요청에 인증 필요
-                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/addVideoToPlaylist", true));*/
+        /*
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/addVideoToPlaylist", true));
+        */
     }
 }
 /*

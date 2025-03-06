@@ -5,12 +5,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body>
-<h1>Welcome Page</h1>
-<p>This is a welcome page after login success.</p>
+<h1>You're Welcome Page</h1>
+<p>This is a welcome page after login being success</p>
 
-<!-- YouTube 영상을 재생목록에 추가하는 링크 -->
-<h2>Add Video to Playlist</h2>
-<p>아래 링크를 클릭하면 YouTube 재생목록에 영상을 추가합니다.</p>
-<a th:href="@{/addVideoToPlaylist(playlistId='PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74', videoId='XPtu0i3Mjag')}">영상 추가하기</a>
+<h2>1. Search Music</h2>
+<a th:href="@{/search?keyword='GeraldAlston-KissAndSayGoodBye'}">GeraldAlston - Kiss And Say GoodBye 검색</a>
+
+<h2>2. See Playlists</h2>
+<a th:href="@{/UC6SN0-0k6z1fj5LmhYHd5UA/playlists}">플레이리스트 목록</a>
+
+<h2>3. See Particular Playlist items</h2>
+<a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/videos}">특정 플레이리스트 내부</a>
+
+<h2>4. Add Particular Video To Playlist</h2>
+<a th:href="@{/addVideoToPlaylist(playlistId='PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74', videoId='wtjro7_R3-4')}">영상 추가하기</a>
 </body>
 </html>
