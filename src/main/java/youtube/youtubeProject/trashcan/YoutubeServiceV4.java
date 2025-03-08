@@ -1,4 +1,4 @@
-package youtube.youtubeProject.service;
+package youtube.youtubeProject.trashcan;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -13,17 +13,16 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
+//@Service
 public class YoutubeServiceV4 {
 
     private static YouTube youtube;
 
-    @Value("${youtube.api.key}")
+//    @Value("${youtube.api.key}")
     private String apiKey;
 
     public YoutubeServiceV4() {
@@ -105,29 +104,7 @@ public class YoutubeServiceV4 {
         return response.getItems();
     }
 
-    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
-        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
-        request.setKey(apiKey);
-        request.setPlaylistId(playlistId);
-        request.setMaxResults(50L);
-        PlaylistItemListResponse response = request.execute();
-
-        List<String> videos = new ArrayList<>(); /// String 타입 말고 다른 방법 Map이나 기타 등등 생각해보기
-
-        for (PlaylistItem item : response.getItems()) {
-            String videoId = item.getSnippet().getResourceId().getVideoId(); // 이제 Private video 라고 뜨는 얘 Id를 디비에서 조회
-            String videoTitle = item.getSnippet().getTitle(); // 비공개는 'Private video' 라고만 받을 수 있음
-            System.out.println("successfully searched : " + videoTitle + "(" + videoId + ")");
-            if(videoTitle.equals("Private video")) {
-                System.err.println("Private video(" + videoId + ") is detected!!");
-                // 비정상적인 제목으로 의심되면 getVideoDetails() 호출해서 검증해도 됨
-            }
-            videos.add(videoTitle + ", " + videoId);
-        }
-        return videos;
-    }
-
-    public List<Video> initiallyAddVideoDetails(String playlistId) throws IOException {
+    public List<Video> getVideosFromPlaylist(String playlistId) throws IOException {
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
         request.setKey(apiKey);
         request.setPlaylistId(playlistId);
@@ -139,19 +116,19 @@ public class YoutubeServiceV4 {
             String videoId = item.getSnippet().getResourceId().getVideoId();
             String videoName = item.getSnippet().getTitle(); // 비공개는 'Private Video' 라고만 받을 수 있음
             try {
-                Video video = getVideoDetails(videoId); // 이런식으로 비디오 상세 정보 뽑아서 디비에 저장가능
-                String description = video.getSnippet().getDescription();
-                List<String> tags = video.getSnippet().getTags();
-
+                Video video = getVideoDetails(videoId);
+//                if (isVideoAccessible(video)) {
+//                    videos.add(video);
+//                } else {
+//                    System.err.println("Skipping inaccessible video : " + videoId);
+//                }
                 videos.add(video);
-                System.out.println("successfully added : " + videoName + "(" + videoId + ")");
-
             } catch (IOException e) {
                 System.err.println("Failed to fetch details for video : " + videoId); e.printStackTrace();
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());
-                System.err.println("Inaccessible Video : " + videoName + "(" + videoId + ")");
-                // 만약 최초 등록시 고객의 플리에 접근금지된 영상이 존재하면 알아내는 용도 (내가 대신 추가해 줄 수는 없다 당연히)
+                System.err.println("Inaccessible Video : " + videoId + ", Name : " + videoName);
+                // videoId를 알았으니 이제 DB에서 해당 id로 조회해서 영상 title 등을 가져와야함
             }
         }
         return videos;
@@ -162,13 +139,29 @@ public class YoutubeServiceV4 {
         request.setKey(apiKey);
         request.setId(Collections.singletonList(videoId));
         VideoListResponse response = request.execute();
+
         if (response.getItems().isEmpty()) {
-            throw new RuntimeException("Video Not Found When Initially Adding - REX : " + videoId);
+            throw new RuntimeException("Throw Video Not Found REX : " + videoId);
         }
+
         return response.getItems().get(0);
     }
 
+    private boolean isVideoAccessible(Video video) {
+        VideoStatus status = video.getStatus();
+        if (status == null) {
+            return false; // 상태 정보가 없으면 접근 불가로 처리
+        }
+        String privacyStatus = status.getPrivacyStatus();// 비공개 또는 삭제된 영상인지 확인
+        String uploadStatus = status.getUploadStatus();
+        // 공개 영상이고, 삭제되지 않은 경우만 접근 가능
+        return "public".equals(privacyStatus) && !"deleted".equals(uploadStatus);
+    }
+
     public String searchVideo(String query) throws IOException {
+//        youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
+//        youtube = new YouTube.Builder(new com.google.api.client.http.javanet.NetHttpTransport(), new GsonFactory(), request -> {}).build();
+        // YouTube Search API를 사용하여 동영상 검색을 위한 요청 객체 생성
         YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
         search.setKey(apiKey);
         search.setQ(query);
@@ -183,16 +176,6 @@ public class YoutubeServiceV4 {
         return "검색 결과가 없습니다";
     }
 
-    private boolean isVideoAccessible(Video video) {
-        VideoStatus status = video.getStatus();
-        if (status == null) {
-            return false; // 상태 정보가 없으면 접근 불가로 처리
-        }
-        String privacyStatus = status.getPrivacyStatus();// 비공개 또는 삭제된 영상인지 확인
-        String uploadStatus = status.getUploadStatus();
-        // 공개 영상이고, 삭제되지 않은 경우만 접근 가능
-        return "public".equals(privacyStatus) && !"deleted".equals(uploadStatus);
-    }
 }
 
 /* 원본 코드

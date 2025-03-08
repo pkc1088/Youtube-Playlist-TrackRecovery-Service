@@ -6,6 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Entity
 public class NormalMusic {
@@ -16,7 +19,8 @@ public class NormalMusic {
 
     private String videoId;
     private String videoTitle;
-    private String videoStatus;
+    private String videoDescription;
+    private String videoTags; //@ElementCollection private List<String>
 
     private String musicTitle;
     private String musicSinger;
@@ -29,17 +33,21 @@ public class NormalMusic {
     public NormalMusic() {
     }
 
-    public NormalMusic(String videoId, String videoTitle, String videoStatus,
+    public NormalMusic(String videoId, String videoTitle, String videoDescription, String videoTags,
                        String musicTitle, String musicSinger,
                        String videoPlaylistId, int videoPlaylistPosition,
                        String UserId) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
-        this.videoStatus = videoStatus;
+        this.videoDescription = videoDescription;
+        this.videoTags = videoTags;
+
         this.musicTitle = musicTitle;
         this.musicSinger = musicSinger;
+
         this.videoPlaylistId = videoPlaylistId;
         this.videoPlaylistPosition = videoPlaylistPosition;
+
         this.UserId = UserId;
     }
 }

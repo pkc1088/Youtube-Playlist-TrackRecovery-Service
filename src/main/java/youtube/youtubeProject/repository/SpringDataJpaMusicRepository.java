@@ -12,7 +12,6 @@ public interface SpringDataJpaMusicRepository extends JpaRepository<NormalMusic,
     List<NormalMusic> findByVideoIdLike(String videoId);
 
     List<NormalMusic> findByVideoTitleLike(String videoTitle);
-    List<NormalMusic> findByVideoStatusLike(String status);
 
     List<NormalMusic> findByMusicTitleLike(String musicTitle);
     List<NormalMusic> findByMusicSingerLike(String musicSinger);
