@@ -44,6 +44,12 @@ public class YoutubeControllerV4 {
         return "redirect:/"; // 작업 완료 후 루트 페이지로 리다이렉트
     }
 
+    @PostMapping("/deleteFromPlaylist")
+    public String deleteFromPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
+        String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
+        return "redirect:/"; // 작업 완료 후 루트 페이지로 리다이렉트
+    }
+
     @GetMapping("{channelId}/playlists")
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
         List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
@@ -53,8 +59,15 @@ public class YoutubeControllerV4 {
 
     @GetMapping("{playlistId}/videos")
     public String getVideos(@PathVariable String playlistId, Model model) throws IOException {
-        List<Video> videos = youtubeService.getVideosFromPlaylist(playlistId);
-        model.addAttribute("videos", videos);
+        /*List<Video> videos = youtubeService.getVideosFromPlaylist(playlistId);
+        model.addAttribute("videos", videos);*/
+        try {
+            List<Video> videos = youtubeService.getVideosFromPlaylist(playlistId);
+            model.addAttribute("videos", videos); // 접근 가능한 영상 목록을 모델에 추가
+        } catch (IOException e) {
+            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
+            e.printStackTrace();
+        }
         return "videos"; // videos.html로 이동
     }
 

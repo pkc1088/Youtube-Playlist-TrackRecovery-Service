@@ -1,22 +1,21 @@
-package youtube.youtubeProject.controller;
+package youtube.youtubeProject.trashcan;
 
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.service.YoutubeServiceV3;
+import youtube.youtubeProject.trashcan.YoutubeServiceV3_5;
 
 import java.io.IOException;
 import java.util.List;
 
 //@RestController
-public class YoutubeControllerV3 {
+public class YoutubeControllerV3_5 {
 
 //    @Autowired
-    private YoutubeServiceV3 youtubeService;
+    private YoutubeServiceV3_5 youtubeService;
 
 //    @GetMapping("/addVideoToPlaylist")
     public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {

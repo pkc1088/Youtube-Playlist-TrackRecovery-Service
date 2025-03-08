@@ -4,11 +4,19 @@
     <title>Videos</title>
 </head>
 <body>
-<h1>Videos</h1>
-<ul>
-    <li th:each="video : ${videos}">
-        <span th:text="${video.snippet.title}"></span>
-    </li>
-</ul>
+    <h1>Videos</h1>
+
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}">
+        <p style="color: red;" th:text="${error}"></p>
+    </div>
+    <ul>
+        <li th:each="video : ${videos}">
+            <span th:text="${video.snippet.title}"></span>
+            <span th:text="${video.id}"></span>
+            <span th:text="${video.status}"></span>
+    <!--        <span th:text="${video.snippet.resourceId.videoId}"></span>-->
+        </li>
+    </ul>
 </body>
 </html>

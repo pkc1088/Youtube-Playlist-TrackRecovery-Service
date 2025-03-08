@@ -8,6 +8,8 @@
 <ul>
   <li th:each="playlist : ${playlists}">
     <span th:text="${playlist.snippet.title}"></span>
+    <span th:text="${playlist.contentDetails.itemCount}"></span>
+    <span th:text="${playlist.id}"></span>
   </li>
 </ul>
 </body>

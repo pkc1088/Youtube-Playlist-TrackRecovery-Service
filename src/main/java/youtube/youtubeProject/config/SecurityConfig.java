@@ -1,8 +1,6 @@
 package youtube.youtubeProject.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,18 +14,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login").permitAll() // 로그인되지 않은 사용자라면 /login으로 리다이렉트
-                        .anyRequest().authenticated() // login 외 모든 요청은 인증 필요
+                        .requestMatchers("/login").permitAll()       // 로그인되지 않은 사용자라면 /login으로 리다이렉트
+                        .anyRequest().authenticated()                        // login 외 모든 요청은 인증 필요
                 )
                 .formLogin(form -> form
-                        .loginPage("/login") // 커스텀 로그인 페이지 설정
-                        .permitAll() // 로그인 페이지는 누구나 접근 가능
+                        .loginPage("/login")                                 // 커스텀 로그인 페이지 설정
+                        .permitAll()                                         // 로그인 페이지는 누구나 접근 가능
                         .defaultSuccessUrl("/", true) // 로그인 성공 시 루트 페이지로 리다이렉트
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // OAuth2 로그인도 커스텀 로그인 페이지 사용
+                        .loginPage("/login")                                 // OAuth2 로그인도 커스텀 로그인 페이지 사용
                         .defaultSuccessUrl("/", true) // 로그인 성공 시 루트 페이지로 리다이렉트
                 );
+
+        return http.build();
 
         /*
                 .authorizeHttpRequests(authorize -> authorize
@@ -40,8 +40,6 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable() // 폼 로그인 비활성화
                 );
          */
-
-        return http.build();
         /*
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/addVideoToPlaylist", true));
