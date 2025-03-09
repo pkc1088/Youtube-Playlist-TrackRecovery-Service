@@ -3,34 +3,40 @@ package youtube.youtubeProject.service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
+import youtube.youtubeProject.domain.Music;
+import youtube.youtubeProject.repository.YoutubeRepository;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-//@Service
-public class YoutubeServiceV4 {
+// 여기서는 Repository에 대한 동작이 들어가야함
+//@RequiredArgsConstructor
+@Service
+public class YoutubeServiceV5 implements YoutubeService{
 
-    private static YouTube youtube;
-
-    //@Value("${youtube.api.key}")
+    @Value("${youtube.api.key}")
     private String apiKey;
+    private static YouTube youtube;
+    private final YoutubeRepository youtubeRepository;
 
-    public YoutubeServiceV4() {
+
+    public YoutubeServiceV5(YoutubeRepository youtubeRepository) {
+        this.youtubeRepository = youtubeRepository;
         // YouTube 객체를 빌드하여 API에 접근할 수 있는 YouTube 클라이언트 생성
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
+    // repository에 변경 필요함
     public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
         try {
             GoogleCredential credential = new GoogleCredential()
@@ -62,9 +68,9 @@ public class YoutubeServiceV4 {
         }
     }
 
+    // repository에 변경 필요함
     public String deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
         try {
-            // GoogleCredential을 사용하여 YouTube 객체 생성
             GoogleCredential credential = new GoogleCredential()
                     .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
             YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
@@ -74,7 +80,7 @@ public class YoutubeServiceV4 {
             // 재생목록에서 영상을 찾기 위해 playlistItems.list 호출
             YouTube.PlaylistItems.List playlistItemsRequest = youtube.playlistItems().list(Collections.singletonList("id,snippet"));
             playlistItemsRequest.setPlaylistId(playlistId);
-            playlistItemsRequest.setMaxResults(50L); // 최대 50개의 항목을 가져옴
+            playlistItemsRequest.setMaxResults(50L);
 
             PlaylistItemListResponse playlistItemsResponse = playlistItemsRequest.execute();
             List<PlaylistItem> playlistItems = playlistItemsResponse.getItems();
@@ -82,7 +88,6 @@ public class YoutubeServiceV4 {
             // 영상 ID와 일치하는 재생목록 항목을 찾음
             for (PlaylistItem playlistItem : playlistItems) {
                 if (playlistItem.getSnippet().getResourceId().getVideoId().equals(videoId)) {
-                    // 재생목록 항목 ID를 사용하여 삭제 요청
                     YouTube.PlaylistItems.Delete deleteRequest = youtube.playlistItems().delete(playlistItem.getId());
                     deleteRequest.execute();
                     return "Video deleted from playlist: " + videoId;
@@ -127,6 +132,7 @@ public class YoutubeServiceV4 {
         return videos;
     }
 
+    // repository에 변경 필요함
     public List<Video> initiallyAddVideoDetails(String playlistId) throws IOException {
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
         request.setKey(apiKey);
@@ -141,10 +147,13 @@ public class YoutubeServiceV4 {
             try {
                 Video video = getVideoDetails(videoId); // 이런식으로 비디오 상세 정보 뽑아서 디비에 저장가능
                 String description = video.getSnippet().getDescription();
+                String videoUploader = video.getSnippet().getChannelTitle();
                 List<String> tags = video.getSnippet().getTags();
 
                 videos.add(video);
-                System.out.println("successfully added : " + videoName + "(" + videoId + ")");
+                System.out.println("successfully added : " + videoName + "(" + videoId + ") by " + videoUploader);
+
+                youtubeRepository.initiallyAddVideoDetails(playlistId, videoName, videoId, videoUploader); // 성공
 
             } catch (IOException e) {
                 System.err.println("Failed to fetch details for video : " + videoId); e.printStackTrace();
@@ -157,7 +166,7 @@ public class YoutubeServiceV4 {
         return videos;
     }
 
-    private Video getVideoDetails(String videoId) throws IOException {
+    public Video getVideoDetails(String videoId) throws IOException {
         YouTube.Videos.List request = youtube.videos().list(Collections.singletonList("snippet, id, status")); // id 추가
         request.setKey(apiKey);
         request.setId(Collections.singletonList(videoId));
@@ -182,76 +191,4 @@ public class YoutubeServiceV4 {
         }
         return "검색 결과가 없습니다";
     }
-
-    private boolean isVideoAccessible(Video video) {
-        VideoStatus status = video.getStatus();
-        if (status == null) {
-            return false; // 상태 정보가 없으면 접근 불가로 처리
-        }
-        String privacyStatus = status.getPrivacyStatus();// 비공개 또는 삭제된 영상인지 확인
-        String uploadStatus = status.getUploadStatus();
-        // 공개 영상이고, 삭제되지 않은 경우만 접근 가능
-        return "public".equals(privacyStatus) && !"deleted".equals(uploadStatus);
-    }
 }
-
-/* 원본 코드
- public List<Video> getVideosFromPlaylist(String playlistId) throws IOException {
-        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
-        request.setKey(apiKey);
-        request.setPlaylistId(playlistId);
-        request.setMaxResults(50L);
-        PlaylistItemListResponse response = request.execute();
-        List<Video> videos = new ArrayList<>();
-
-        for (PlaylistItem item : response.getItems()) {
-            String videoId = item.getSnippet().getResourceId().getVideoId();
-            // try/catch 필요할듯
-            videos.add(getVideoDetails(videoId));
-            //videos.add(videoId);
-        }
-        return videos;
-    }
-
-    private Video getVideoDetails(String videoId) throws IOException {
-        YouTube.Videos.List request = youtube.videos().list(Collections.singletonList("snippet, status"));
-        request.setKey(apiKey);
-        request.setId(Collections.singletonList(videoId));
-        VideoListResponse response = request.execute();
-        return response.getItems().get(0);
-    }
- */
-
-/*
-    public String my_deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) throws IOException, GeneralSecurityException {
-        try {
-            GoogleCredential credential = new GoogleCredential()
-                    .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
-
-            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
-                    .setApplicationName("youtube-cmdline-delete-from-playlist-sample")
-                    .build();
-
-            ResourceId resourceId = new ResourceId();
-            resourceId.setKind("youtube#video");
-            resourceId.setVideoId(videoId);
-
-            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
-            playlistItemSnippet.setPlaylistId(playlistId);
-            playlistItemSnippet.setResourceId(resourceId);
-
-            PlaylistItem playlistItem = new PlaylistItem();
-            playlistItem.setSnippet(playlistItemSnippet);
-
-            YouTube.PlaylistItems.Delete request = youtube.playlistItems().delete(videoId);
-            request.execute();
-
-            return "Video deleted from playlist : " + videoId;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "Failed to delete video to playlist";
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
-*/

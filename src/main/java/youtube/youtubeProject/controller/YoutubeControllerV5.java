@@ -10,47 +10,48 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import youtube.youtubeProject.service.YoutubeServiceV4;
+import youtube.youtubeProject.service.YoutubeServiceV5;
 
 import java.io.IOException;
 import java.util.List;
 
-//@Controller
-public class YoutubeControllerV4 {
+@Controller
+public class YoutubeControllerV5 {
 
-    //@Autowired
-    private YoutubeServiceV4 youtubeService;
+    @Autowired
+    private YoutubeServiceV5 youtubeService;
 
 
-    //@GetMapping("/login")
+    @GetMapping("/login")
     public String loginPage() {
-        return "login"; // login.html을 반환
+        return "login";
     }
 
-    //@GetMapping("/")
+    @GetMapping("/")
     public String welcomePage() {
         return "welcome";
     }
 
-    //@PostMapping("/addVideoToPlaylist")
+    @PostMapping("/addVideoToPlaylist") // not done
     public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
         String result =  youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
-        return "redirect:/"; // 작업 완료 후 루트 페이지로 리다이렉트
+        return "redirect:/";
     }
 
-    //@PostMapping("/deleteFromPlaylist")
+    @PostMapping("/deleteFromPlaylist") // not done
     public String deleteFromPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
         String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
-        return "redirect:/"; // 작업 완료 후 루트 페이지로 리다이렉트
+        return "redirect:/";
     }
 
-    //@GetMapping("{channelId}/playlists")
+    @GetMapping("{channelId}/playlists") // not done
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
         List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
         model.addAttribute("playlists", playlists);
-        return "playlists"; // playlists.html로 이동
+        return "playlists";
     }
 
-    //@GetMapping("{playlistId}/getVideos")
+    @GetMapping("{playlistId}/getVideos") // not done
     public String getVideos(@PathVariable String playlistId, Model model) throws IOException {
         try {
             List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
@@ -59,10 +60,10 @@ public class YoutubeControllerV4 {
             model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
             e.printStackTrace();
         }
-        return "getVideos"; // videos.html로 이동
+        return "getVideos";
     }
 
-    //@GetMapping("{playlistId}/initiallyAddVideoDetails")
+    @GetMapping("{playlistId}/initiallyAddVideoDetails") // not done
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
         try {
             List<Video> videos = youtubeService.initiallyAddVideoDetails(playlistId);
@@ -71,38 +72,13 @@ public class YoutubeControllerV4 {
             model.addAttribute("error", "Failed to fetch videos from playlist - Addvideos() method.");
             e.printStackTrace();
         }
-        return "addVideos"; // videos.html로 이동
+        return "addVideos";
     }
 
-
-    //@GetMapping("search")
+    @GetMapping("search") // not done
     public String searchVideo(@RequestParam String keyword, Model model) throws IOException {
         String result = youtubeService.searchVideo(keyword);
         model.addAttribute("result", result);
-        return "search"; // search.html로 이동
+        return "search";
     }
-
-//    @ResponseBody
-//    @GetMapping("/addVideoToPlaylist")
-//    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
-//        return youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
-//    }
-//    @ResponseBody
-//    @GetMapping("/youtube/{channelId}/playlists")
-//    public List<Playlist> getPlaylists(@PathVariable String channelId) throws IOException {
-//        return youtubeService.getPlaylistsByChannelId(channelId);
-//    }
-//
-//    @ResponseBody
-//    @GetMapping("/youtube/playlist/{playlistId}/videos")
-//    public List<Video> getVideos(@PathVariable String playlistId) throws IOException {
-//        return youtubeService.getVideosFromPlaylist(playlistId);
-//    }
-//
-//    @ResponseBody
-//    @GetMapping("/youtube/search")
-//    public ResponseEntity<String> searchVideo(@RequestParam String keyword) throws IOException {
-//        String result = youtubeService.searchVideo(keyword);
-//        return ResponseEntity.ok(result);
-//    }
 }

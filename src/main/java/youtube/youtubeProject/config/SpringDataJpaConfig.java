@@ -3,26 +3,26 @@ package youtube.youtubeProject.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import youtube.youtubeProject.repository.MusicRepository;
-import youtube.youtubeProject.repository.MusicRepositoryImpl;
-import youtube.youtubeProject.repository.SpringDataJpaMusicRepository;
-import youtube.youtubeProject.service.MusicService;
-import youtube.youtubeProject.service.MusicServiceImpl;
+import youtube.youtubeProject.repository.SpringDataJpaYoutubeRepository;
+import youtube.youtubeProject.repository.YoutubeRepository;
+import youtube.youtubeProject.repository.YoutubeRepositoryV5;
+import youtube.youtubeProject.service.YoutubeService;
+import youtube.youtubeProject.service.YoutubeServiceV5;
 
 @Configuration
 @RequiredArgsConstructor
 public class SpringDataJpaConfig {
 
-    private final SpringDataJpaMusicRepository springDataJpaMusicRepository;
+    private final SpringDataJpaYoutubeRepository springDataJpaYoutubeRepository;
 
     @Bean
-    public MusicService musicService() {
-        return new MusicServiceImpl(musicRepository());
+    public YoutubeService youtubeService() {
+        return new YoutubeServiceV5(youtubeRepository());
     }
 
     @Bean
-    public MusicRepository musicRepository() {
-        return new MusicRepositoryImpl(springDataJpaMusicRepository);
+    public YoutubeRepository youtubeRepository() {
+        return new YoutubeRepositoryV5(springDataJpaYoutubeRepository);
     }
 
 }
