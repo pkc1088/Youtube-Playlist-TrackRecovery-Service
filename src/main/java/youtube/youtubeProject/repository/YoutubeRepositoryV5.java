@@ -9,6 +9,7 @@ import youtube.youtubeProject.domain.Music;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -49,6 +50,47 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
         return;
     }
 
+    public String getMusicTitleFromDBThruMusicId(String videoId) {
+        Optional<Music> optionalMusic = repository.findByVideoId(videoId);
+        String resultMusicTitle = "";
+        if (optionalMusic.isPresent()) {
+            Music musicFromDB = optionalMusic.get();
+            resultMusicTitle = musicFromDB.getVideoTitle();
+        }
+        return resultMusicTitle;
+    }
+
+    public void fileTrackAndRecover(String videoIdToDelete, String videoTitleToDelete, Music videoToRecover) {
+        //List<Music> findFirst = repository.findByVideoTitleLike(videoTitleToDelete);\
+        //repository.deleteById(Long.valueOf(videoIdToDelete));
+        Optional<Music> optionalMusic = repository.findByVideoId(videoIdToDelete);
+        System.err.println("found " + optionalMusic + " from DB Thru SpringDataJPA");
+
+        if (optionalMusic.isPresent()) {
+            Music musicToUpdate = optionalMusic.get();
+            musicToUpdate.setVideoId(videoToRecover.getVideoId());// videoToRecover의 정보로 엔티티 업데이트
+            musicToUpdate.setVideoTitle(videoToRecover.getVideoTitle());
+            musicToUpdate.setVideoUploader(videoToRecover.getVideoUploader());
+            musicToUpdate.setVideoDescription(videoToRecover.getVideoDescription());
+            musicToUpdate.setVideoTags(videoToRecover.getVideoTags());
+            //musicToUpdate.setVideoPlaylistId(videoToRecover.getVideoPlaylistId()); 이것도 기존 플리에 저장할거니 그대로
+            //musicToUpdate.setVideoPlaylistPosition(videoToRecover.getVideoPlaylistPosition()); 기존 자리에 둘거니 그대로
+            //musicToUpdate.setUserId(videoToRecover.getUserId());
+
+            // 안되면 delete 후 save 해도 됨 업데이트가 비디오 아이디가 바뀌는거라 잘 될 듯?
+            System.err.println("musicToUpdate completed");
+
+            // 업데이트된 엔티티 저장할 필요 없는걸로 아는데?
+            //repository.save(musicToUpdate);
+        } else {
+            throw new RuntimeException("Video not found with ID: " + videoIdToDelete);
+        }
+
+        return;
+    }
+
+
+
     @Override
     public Video getVideoDetails(String videoId) throws IOException {
         return null;
@@ -56,6 +98,11 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
 
     @Override
     public String searchVideo(String query) throws IOException {
+        return null;
+    }
+
+    public String memberRegister(String userId, String userPwd, String userName) {
+
         return null;
     }
 }

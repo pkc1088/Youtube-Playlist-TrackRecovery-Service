@@ -9,15 +9,14 @@ import com.google.api.services.youtube.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Music;
 import youtube.youtubeProject.repository.YoutubeRepository;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 // 여기서는 Repository에 대한 동작이 들어가야함
 //@RequiredArgsConstructor
@@ -36,7 +35,6 @@ public class YoutubeServiceV5 implements YoutubeService{
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
-    // repository에 변경 필요함
     public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
         try {
             GoogleCredential credential = new GoogleCredential()
@@ -52,6 +50,7 @@ public class YoutubeServiceV5 implements YoutubeService{
             PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
             playlistItemSnippet.setPlaylistId(playlistId);
             playlistItemSnippet.setResourceId(resourceId);
+//            playlistItemSnippet.setPosition()
 
             PlaylistItem playlistItem = new PlaylistItem();
             playlistItem.setSnippet(playlistItemSnippet);
@@ -68,7 +67,6 @@ public class YoutubeServiceV5 implements YoutubeService{
         }
     }
 
-    // repository에 변경 필요함
     public String deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
         try {
             GoogleCredential credential = new GoogleCredential()
@@ -101,38 +99,6 @@ public class YoutubeServiceV5 implements YoutubeService{
         }
     }
 
-    public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
-        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
-        request.setKey(apiKey);
-        request.setChannelId(channelId);
-        request.setMaxResults(50L);
-        PlaylistListResponse response = request.execute();
-        return response.getItems();
-    }
-
-    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
-        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
-        request.setKey(apiKey);
-        request.setPlaylistId(playlistId);
-        request.setMaxResults(50L);
-        PlaylistItemListResponse response = request.execute();
-
-        List<String> videos = new ArrayList<>(); /// String 타입 말고 다른 방법 Map이나 기타 등등 생각해보기
-
-        for (PlaylistItem item : response.getItems()) {
-            String videoId = item.getSnippet().getResourceId().getVideoId(); // 이제 Private video 라고 뜨는 얘 Id를 디비에서 조회
-            String videoTitle = item.getSnippet().getTitle(); // 비공개는 'Private video' 라고만 받을 수 있음
-            System.out.println("successfully searched : " + videoTitle + "(" + videoId + ")");
-            if(videoTitle.equals("Private video")) {
-                System.err.println("Private video(" + videoId + ") is detected!!");
-                // 비정상적인 제목으로 의심되면 getVideoDetails() 호출해서 검증해도 됨
-            }
-            videos.add(videoTitle + ", " + videoId);
-        }
-        return videos;
-    }
-
-    // repository에 변경 필요함
     public List<Video> initiallyAddVideoDetails(String playlistId) throws IOException {
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
         request.setKey(apiKey);
@@ -177,6 +143,69 @@ public class YoutubeServiceV5 implements YoutubeService{
         return response.getItems().get(0);
     }
 
+    public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, String playlistId) throws IOException {
+
+        Map<String, String> videos = getIllegalVideosFromPlaylist(playlistId); // 걍 여기서 id만 뽑아와도 됨
+
+        for (String videoIdToDelete : videos.keySet()) { // illegal video가 여러개일 수 있으니
+            String videoTitleToDelete = videos.get(videoIdToDelete);
+            System.err.println("Tracked Illegal Music (" + videoIdToDelete + ", " + videoTitleToDelete + ")");
+
+            // 1. DB에서 videoId로 검색해서 백업된 videoTitle을 가져옴
+            String titleToSearch = youtubeRepository.getMusicTitleFromDBThruMusicId(videoIdToDelete);
+            // 2. 그 videoTitle로 유튜브에 검색을 함 search 해서 return Video로 받음
+            Music videoForRecovery = searchVideoToRecover(titleToSearch, playlistId);
+            // 3. DB를 업데이트한다 CRUD 동작은 service가 아니라 repository가 맡아서 한다.
+            youtubeRepository.fileTrackAndRecover(videoIdToDelete, videoTitleToDelete, videoForRecovery); //title은 사실 안줘도 됨
+            // 4. 실제 유튜브 플레이리스트에도 add와 delete를 해준다
+            addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId()); // position 넣어주자
+            deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
+        }
+        return;
+    }
+
+    public Map<String, String> getIllegalVideosFromPlaylist(String playlistId) throws IOException {
+        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
+        request.setKey(apiKey);
+        request.setPlaylistId(playlistId);
+        request.setMaxResults(50L);
+        PlaylistItemListResponse response = request.execute();
+
+        Map<String, String> videos = new HashMap<>();
+
+        for (PlaylistItem item : response.getItems()) {
+            String videoId = item.getSnippet().getResourceId().getVideoId(); // 이제 Private video 라고 뜨는 얘 Id를 디비에서 조회
+            String videoTitle = item.getSnippet().getTitle(); // 비공개는 'Private video' 라고만 받을 수 있음
+            long pos = item.getSnippet().getPosition();
+            //System.out.println("successfully searched : " + videoTitle + "(" + videoId + ")");
+            if(videoTitle.equals("Private video")) {
+                System.err.println("Private video(" + videoId + ") is detected at position " + pos);
+                // 비정상적인 제목으로 의심되면 getVideoDetails() 호출해서 검증해도 됨
+                // 여기서만 Map에 담아서 반환해줘도 됨
+                videos.put(videoId, videoTitle);
+            }
+        }
+        return videos;
+    }
+
+    public Music searchVideoToRecover(String query, String playlistId) throws IOException {
+        YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
+        search.setKey(apiKey);
+        search.setQ(query);
+        SearchListResponse searchResponse = search.execute();                   // 검색 요청 실행 및 응답 받아오기
+        List<SearchResult> searchResultList = searchResponse.getItems();        // 검색 결과에서 동영상 목록 가져오기
+        SearchResult searchResult = searchResultList.get(0);                    //검색 결과 중 첫 번째 동영상 정보 가져오기
+        String videoId = searchResult.getId().getVideoId();                 // 동영상의 ID와 제목 가져오기
+        String videoTitle = searchResult.getSnippet().getTitle();
+        String videoUploader = searchResult.getSnippet().getChannelTitle();
+
+        System.err.println("Found a music to replace : " + videoTitle + ", " + videoUploader);
+        Music musicForRecovery = new Music(videoId, videoTitle, videoUploader, "someDescription",
+                                "someTags", playlistId, 5, "someone's Id");
+
+        return musicForRecovery;
+    }
+
     public String searchVideo(String query) throws IOException {
         YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
         search.setKey(apiKey);
@@ -190,5 +219,40 @@ public class YoutubeServiceV5 implements YoutubeService{
             return "Title: " + videoTitle + "\nURL: https://www.youtube.com/watch?v=" + videoId;
         }
         return "검색 결과가 없습니다";
+    }
+
+    public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
+        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
+        request.setKey(apiKey);
+        request.setChannelId(channelId);
+        request.setMaxResults(50L);
+        PlaylistListResponse response = request.execute();
+        return response.getItems();
+    }
+
+    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
+        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id"));
+        request.setKey(apiKey);
+        request.setPlaylistId(playlistId);
+        request.setMaxResults(50L);
+        PlaylistItemListResponse response = request.execute();
+
+        List<String> videos = new ArrayList<>(); /// String 타입 말고 다른 방법 Map이나 기타 등등 생각해보기
+
+        for (PlaylistItem item : response.getItems()) {
+            String videoId = item.getSnippet().getResourceId().getVideoId(); // 이제 Private video 라고 뜨는 얘 Id를 디비에서 조회
+            String videoTitle = item.getSnippet().getTitle(); // 비공개는 'Private video' 라고만 받을 수 있음
+            System.out.println("successfully searched : " + videoTitle + "(" + videoId + ")");
+            if(videoTitle.equals("Private video")) {
+                System.err.println("Private video(" + videoId + ") is detected!!");
+                // 비정상적인 제목으로 의심되면 getVideoDetails() 호출해서 검증해도 됨
+            }
+            videos.add(videoTitle + ", " + videoId);
+        }
+        return videos;
+    }
+
+    public String memberRegister(String userId, String userPwd, String userName) {
+        return null;
     }
 }

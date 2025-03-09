@@ -17,4 +17,9 @@ public interface YoutubeRepository {
     public void initiallyAddVideoDetails(String playlistId, String videoName, String videoId, String videoUploader) throws IOException;
     public Video getVideoDetails(String videoId) throws IOException;
     public String searchVideo(String query) throws IOException;
+    public String memberRegister(String userId, String userPwd, String userName);
+    public String getMusicTitleFromDBThruMusicId(String videoIdToDelete);
+    public void fileTrackAndRecover(String videoIdToDelete, String videoTitleToDelete, Music videoToRecover);
+
+
 }

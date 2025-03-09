@@ -33,18 +33,7 @@
     <button type="submit">Add Video</button>
 </form>
 
-<!-- YouTube 영상을 재생목록에 추가하는 폼
-<h2>Add Video to Playlist</h2>
-<form action="/addVideoToPlaylist" method="post">
-    <label for="playlistId">Playlist ID:</label>
-    <input type="text" id="playlistId" name="playlistId" required><br>
-    <label for="videoId">Video ID:</label>
-    <input type="text" id="videoId" name="videoId" required><br>
-    <button type="submit">Add Video</button>
-</form>-->
-
 <!-- YouTube 영상을 재생목록에서 삭제하는 폼 -->
-<!-- 결과 메시지 표시 -->
 <h2>6. Delete Certain Video from Playlist</h2>
 <form action="/deleteFromPlaylist" method="post">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
@@ -57,10 +46,14 @@
     <button type="submit">Delete Video</button>
 </form>
 
-
-
-
-
+<h2>7. File Track And Recover Start</h2>
+<form action="/fileTrackAndRecover" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
+    <label for="playlistIdForRecover">playlistId for Recover:</label>
+    <input type="text" id="playlistIdForRecover" name="playlistIdForRecover" required>
+    <br>
+    <button type="submit">File Track & Recover</button>
+</form>
 
 
 </body>

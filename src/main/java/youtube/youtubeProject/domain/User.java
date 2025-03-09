@@ -15,8 +15,12 @@ public class User {
     private Long id;
 
     private String userId;
+    private String userPassword;
+    private String userName;
+
+    private String accessToken;
+    private String refreshToken;
     private String email;
-    private String name;
 
     // 생성자, Getter, Setter
 }
