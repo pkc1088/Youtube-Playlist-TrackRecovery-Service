@@ -17,10 +17,10 @@ public class User {
     private String userId;
     private String userPassword;
     private String userName;
+    private String userHandler;
+    private String email;
 
     private String accessToken;
     private String refreshToken;
-    private String email;
-
     // 생성자, Getter, Setter
 }

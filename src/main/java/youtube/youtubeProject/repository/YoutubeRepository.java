@@ -19,7 +19,8 @@ public interface YoutubeRepository {
     public String searchVideo(String query) throws IOException;
     public String memberRegister(String userId, String userPwd, String userName);
     public String getMusicTitleFromDBThruMusicId(String videoIdToDelete);
-    public void fileTrackAndRecover(String videoIdToDelete, String videoTitleToDelete, Music videoToRecover);
+    public void dBTrackAndRecover(String videoIdToDelete, Music videoToRecover);
+    //public void fileTrackAndRecover(String videoIdToDelete, String videoTitleToDelete, Music videoToRecover);
 
 
 }

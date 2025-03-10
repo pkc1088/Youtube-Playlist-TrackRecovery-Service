@@ -1,55 +1,53 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Hello</title>
+    <title>Youtube Music Track & Recovery Service</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body>
 <h1>You're Welcome Page</h1>
-<p>This is a welcome page after login being success</p>
+<p>This is a welcome page after login</p>
 
-<h2>1. Search Music</h2>
-<a th:href="@{/search?keyword='The Manhattans - Kiss And Say GoodBye'}">The Manhattans - Kiss And Say GoodBye 검색</a>
+<!--<h2>1. API - Search Music</h2>-->
+<!--<a th:href="@{/search?keyword='The Manhattans - Kiss And Say GoodBye'}">The Manhattans - Kiss And Say GoodBye 검색</a>-->
 
-<h2>2. See Playlists</h2>
+<h2>2. API - See Playlists</h2>
 <a th:href="@{/UC6SN0-0k6z1fj5LmhYHd5UA/playlists}">플레이리스트 목록 단순 조회</a>
 
-<h2>3. See Particular Playlist items</h2>
+<h2>3. API - See Particular Playlist items</h2>
 <a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/getVideos}">특정 플레이리스트 내부 단순 조회</a>
 
 <h2>4. Initially Add Videos With Details To The DataBase</h2>
 <a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/initiallyAddVideoDetails}">특정 플레이리스트 영상들의 상세 정보를 최초 등록</a>
 
-<!-- YouTube 영상을 재생목록에 추가하는 폼 -->
-<h2>5. Add Certain Video to Playlist</h2>
-<form action="/addVideoToPlaylist" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
-    <label for="playlistId">Playlist ID:</label>
-    <input type="text" id="playlistId" name="playlistId" required>
-    <br>
-    <label for="videoId">Video ID:</label>
-    <input type="text" id="videoId" name="videoId" required>
-    <br>
-    <button type="submit">Add Video</button>
-</form>
+<!--<h2>5. Add Certain Video to Playlist</h2>-->
+<!--<form action="/addVideoToPlaylist" method="post">-->
+<!--    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> &lt;!&ndash; CSRF 토큰 &ndash;&gt;-->
+<!--    <label for="playlistId">Playlist ID:</label>-->
+<!--    <input type="text" id="playlistId" name="playlistId" required>-->
+<!--    <br>-->
+<!--    <label for="videoId">Video ID:</label>-->
+<!--    <input type="text" id="videoId" name="videoId" required>-->
+<!--    <br>-->
+<!--    <button type="submit">Add Video</button>-->
+<!--</form>-->
 
-<!-- YouTube 영상을 재생목록에서 삭제하는 폼 -->
-<h2>6. Delete Certain Video from Playlist</h2>
-<form action="/deleteFromPlaylist" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
-    <label for="playlistId">Playlist ID:</label>
-    <input type="text" id="deleteplaylistId" name="playlistId" required>
-    <br>
-    <label for="videoId">Video ID:</label>
-    <input type="text" id="deletevideoId" name="videoId" required>
-    <br>
-    <button type="submit">Delete Video</button>
-</form>
+<!--<h2>6. Delete Certain Video from Playlist</h2>-->
+<!--<form action="/deleteFromPlaylist" method="post">-->
+<!--    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">-->
+<!--    <label for="playlistId">Playlist ID:</label>-->
+<!--    <input type="text" id="deleteplaylistId" name="playlistId" required>-->
+<!--    <br>-->
+<!--    <label for="videoId">Video ID:</label>-->
+<!--    <input type="text" id="deletevideoId" name="videoId" required>-->
+<!--    <br>-->
+<!--    <button type="submit">Delete Video</button>-->
+<!--</form>-->
 
 <h2>7. File Track And Recover Start</h2>
 <form action="/fileTrackAndRecover" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> <!-- CSRF 토큰 -->
-    <label for="playlistIdForRecover">playlistId for Recover:</label>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <label for="playlistIdForRecover">playlist Id To Recover:</label>
     <input type="text" id="playlistIdForRecover" name="playlistIdForRecover" required>
     <br>
     <button type="submit">File Track & Recover</button>

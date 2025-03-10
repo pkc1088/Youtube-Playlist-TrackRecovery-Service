@@ -60,12 +60,11 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
         return resultMusicTitle;
     }
 
-    public void fileTrackAndRecover(String videoIdToDelete, String videoTitleToDelete, Music videoToRecover) {
+    public void dBTrackAndRecover(String videoIdToDelete, Music videoToRecover) {
         //List<Music> findFirst = repository.findByVideoTitleLike(videoTitleToDelete);\
         //repository.deleteById(Long.valueOf(videoIdToDelete));
         Optional<Music> optionalMusic = repository.findByVideoId(videoIdToDelete);
-        System.err.println("found " + optionalMusic + " from DB Thru SpringDataJPA");
-
+        System.err.println("Found Record : " + optionalMusic);
         if (optionalMusic.isPresent()) {
             Music musicToUpdate = optionalMusic.get();
             musicToUpdate.setVideoId(videoToRecover.getVideoId());// videoToRecover의 정보로 엔티티 업데이트
@@ -73,19 +72,11 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
             musicToUpdate.setVideoUploader(videoToRecover.getVideoUploader());
             musicToUpdate.setVideoDescription(videoToRecover.getVideoDescription());
             musicToUpdate.setVideoTags(videoToRecover.getVideoTags());
-            //musicToUpdate.setVideoPlaylistId(videoToRecover.getVideoPlaylistId()); 이것도 기존 플리에 저장할거니 그대로
-            //musicToUpdate.setVideoPlaylistPosition(videoToRecover.getVideoPlaylistPosition()); 기존 자리에 둘거니 그대로
-            //musicToUpdate.setUserId(videoToRecover.getUserId());
-
-            // 안되면 delete 후 save 해도 됨 업데이트가 비디오 아이디가 바뀌는거라 잘 될 듯?
-            System.err.println("musicToUpdate completed");
-
-            // 업데이트된 엔티티 저장할 필요 없는걸로 아는데?
-            //repository.save(musicToUpdate);
+             //getVideoPlaylistPosition/Id/UserId() 기존 그대로 유지할거니 건들 필요 없음
+            System.err.println("DB update completed");
         } else {
-            throw new RuntimeException("Video not found with ID: " + videoIdToDelete);
+            throw new RuntimeException("DB update error: " + videoIdToDelete);
         }
-
         return;
     }
 

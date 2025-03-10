@@ -3,6 +3,7 @@ package youtube.youtubeProject.controller;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import youtube.youtubeProject.domain.User;
+import youtube.youtubeProject.service.YoutubeService;
 import youtube.youtubeProject.service.YoutubeServiceV4;
 import youtube.youtubeProject.service.YoutubeServiceV5;
 
@@ -18,13 +20,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class YoutubeControllerV5 {
 
-    @Autowired
-    private YoutubeServiceV5 youtubeService;
-
+    //@Autowired
+    private final YoutubeService youtubeService;
     //private final User user;
 
     @GetMapping("/login")
@@ -39,7 +41,7 @@ public class YoutubeControllerV5 {
 
     @GetMapping("/welcome")
     public String welcomePage() {
-        return "welcome";//"welcome"; // welcome이 아니라 memberRegister 로 보내야함
+        return "welcome";
     }
 
     @GetMapping("/memberRegister")
@@ -47,11 +49,20 @@ public class YoutubeControllerV5 {
         return "memberRegister";
     }
 
-    @PostMapping("/memberRegister")
-    public String memberRegister(@RequestParam String userId, @RequestParam String userPwd, @RequestParam String userName) {
+    /*@PostMapping("/memberRegister3")
+    public String memberRegister3(@RequestParam String userId, @RequestParam String userPwd,
+                                 @RequestParam String userName, @RequestParam String userHandler) {
         //String result =  youtubeService.memberRegister(userId, userPwd, userName);
         //User registerUser = user.save(new User(userId, userPwd, userName)); 이것도 YoutubeSerivce 맹키로 다 만들기
         //post 받은거 처리하는건 나중에 하자
+        return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
+    }*/
+    @PostMapping("/memberRegister")
+    public String memberRegister(@ModelAttribute User user) {
+        //String result =  youtubeService.memberRegister(userId, userPwd, userName);
+        //User registerUser = user.save(new User(userId, userPwd, userName)); 이것도 YoutubeSerivce 맹키로 다 만들기
+        //post 받은거 처리하는건 나중에 하자
+        //log.info("member registered");
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
     }
 
@@ -99,32 +110,35 @@ public class YoutubeControllerV5 {
     }
 
     @PostMapping("/fileTrackAndRecover")
-    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistIdForRecover, Model model) throws IOException {
+    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
+                                      @RequestParam String playlistIdForRecover, Model model) throws IOException {
 //        model.addAttribute("playlistIdForRecover", playlistId);
-        System.err.println("========== Music Track And Recover System Start ==========");
+        System.err.println("\n==================== Music Track And Recover System Start ====================");
         youtubeService.fileTrackAndRecover(authorizedClient, playlistIdForRecover); // 결과 알려주는 동작 추가해도 좋음
-        System.err.println("========== Music Track And Recover System Done ==========");
+        System.err.println("==================== Music Track And Recover System Done ====================\n");
         return "redirect:/welcome";
     }
 
-    @GetMapping("search") // 필요없음 이건 내부적으로 수행해야함
-    public String searchVideo(@RequestParam String keyword, Model model) throws IOException {
-        String result = youtubeService.searchVideo(keyword);
-        model.addAttribute("result", result);
-        return "search";
-    }
-
-    @PostMapping("/addVideoToPlaylist") // 필요없음 이건 내부적으로 수행해야함
-    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
-        String result =  youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
-        return "redirect:/welcome";
-    }
-
-    @PostMapping("/deleteFromPlaylist") // 필요없음 이건 내부적으로 수행해야함
-    public String deleteFromPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, @RequestParam String playlistId, @RequestParam String videoId) {
-        String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
-        return "redirect:/welcome";
-    }
+//    @GetMapping("search") // 필요없음 이건 내부적으로 수행해야함
+//    public String searchVideo(@RequestParam String keyword, Model model) throws IOException {
+//        String result = youtubeService.searchVideo(keyword);
+//        model.addAttribute("result", result);
+//        return "search";
+//    }
+//
+//    @PostMapping("/addVideoToPlaylist") // 필요없음 이건 내부적으로 수행해야함
+//    public String addVideoToPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
+//                                     @RequestParam String playlistId, @RequestParam String videoId) {
+//        String result =  youtubeService.addVideoToPlaylist(authorizedClient, playlistId, videoId);
+//        return "redirect:/welcome";
+//    }
+//
+//    @PostMapping("/deleteFromPlaylist") // 필요없음 이건 내부적으로 수행해야함
+//    public String deleteFromPlaylist(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
+//                                     @RequestParam String playlistId, @RequestParam String videoId) {
+//        String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
+//        return "redirect:/welcome";
+//    }
 
     /*
     @GetMapping("/add")
