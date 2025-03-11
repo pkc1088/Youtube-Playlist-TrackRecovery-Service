@@ -16,7 +16,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class YoutubeRepositoryV5 implements YoutubeRepository {
 
-    private final SpringDataJpaYoutubeRepository repository;
+    private final SdjYoutubeRepository repository;
 
     @Override
     public String addVideoToPlaylist(String playlistId, String videoId, Music music) {

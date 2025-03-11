@@ -3,8 +3,6 @@ package youtube.youtubeProject.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @Entity
 public class Music {

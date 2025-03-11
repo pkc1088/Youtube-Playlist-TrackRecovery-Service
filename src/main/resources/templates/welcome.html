@@ -54,5 +54,22 @@
 </form>
 
 
+<h2>8. TokenTest</h2>
+<a th:href="@{/tokenTest}">토큰 테스트</a>
+
+
+<h2>9. TestAddVideoToPlaylist</h2>
+<form action="/TestAddVideoToPlaylist" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <label for="playlistId">Playlist ID:</label>
+    <input type="text" id="playlistId" name="playlistId" required>
+    <br>
+    <label for="videoId">Video ID:</label>
+    <input type="text" id="videoId" name="videoId" required>
+    <br>
+    <button type="submit">Add Video</button>
+</form>
+
+
 </body>
 </html>

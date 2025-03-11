@@ -1,32 +1,28 @@
-package youtube.youtubeProject.service;
+package youtube.youtubeProject.trashcan;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 //@Service
-public class YoutubeServiceV4 {
+public class YoutubeServiceV4_1 {
 
     private static YouTube youtube;
 
     //@Value("${youtube.api.key}")
     private String apiKey;
 
-    public YoutubeServiceV4() {
+    public YoutubeServiceV4_1() {
         // YouTube 객체를 빌드하여 API에 접근할 수 있는 YouTube 클라이언트 생성
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }

@@ -18,9 +18,23 @@ public class User {
     private String userPassword;
     private String userName;
     private String userHandler;
-    private String email;
 
+    private String userEmail;
     private String accessToken;
     private String refreshToken;
+
+    public User() {
+    }
+
+    public User(String userId, String userPassword, String userName, String userHandler,
+                String userEmail, String accessToken, String refreshToken) {
+        this.userId = userId;
+        this.userPassword = userPassword;
+        this.userName = userName;
+        this.userHandler = userHandler;
+        this.userEmail = userEmail;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
     // 생성자, Getter, Setter
 }

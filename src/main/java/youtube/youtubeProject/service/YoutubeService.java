@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface YoutubeService {
+    public String TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId);
     public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId, long videoPosition);
+
     // 굳이 interface에 선언해야할 이유가 있나 지금
     public String deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId);
     public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException;
@@ -22,4 +24,5 @@ public interface YoutubeService {
     public String memberRegister(String userId, String userPwd, String userName);
     public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
                                     String playlistId) throws IOException;
+    void tokenTest(OAuth2AuthorizedClient authorizedClient);
 }

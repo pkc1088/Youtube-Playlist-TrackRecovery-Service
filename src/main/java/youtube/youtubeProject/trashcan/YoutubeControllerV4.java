@@ -6,7 +6,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.service.YoutubeServiceV4;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
 public class YoutubeControllerV4 {
 
     //@Autowired
-    private YoutubeServiceV4 youtubeService;
+    private YoutubeServiceV4_1 youtubeService;
 
 
     //@GetMapping("/login")

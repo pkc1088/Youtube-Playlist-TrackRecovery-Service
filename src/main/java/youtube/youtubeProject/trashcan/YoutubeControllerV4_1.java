@@ -1,24 +1,21 @@
-package youtube.youtubeProject.controller;
+package youtube.youtubeProject.trashcan;
 
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.service.YoutubeServiceV4;
+import youtube.youtubeProject.trashcan.YoutubeServiceV4_1;
 
 import java.io.IOException;
 import java.util.List;
 
 //@Controller
-public class YoutubeControllerV4 {
+public class YoutubeControllerV4_1 {
 
     //@Autowired
-    private YoutubeServiceV4 youtubeService;
+    private YoutubeServiceV4_1 youtubeService;
 
 
     //@GetMapping("/login")

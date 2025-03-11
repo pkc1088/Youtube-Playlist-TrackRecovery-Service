@@ -33,6 +33,31 @@ public class YoutubeServiceV5 implements YoutubeService{
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
+    public List<String> getVideosFromPlaylist(String playlistId) throws IOException { // 단순 조회 - 테스트 용
+        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
+        request.setKey(apiKey);
+        request.setPlaylistId(playlistId);
+        request.setMaxResults(50L);
+        PlaylistItemListResponse response = request.execute();
+
+        List<String> videos = new ArrayList<>();
+
+        for (PlaylistItem item : response.getItems()) {
+            String videoId = item.getSnippet().getResourceId().getVideoId();
+            String videoTitle = item.getSnippet().getTitle();
+            String videoUploader = item.getSnippet().getVideoOwnerChannelTitle();
+            String videoPrivacyStatus = item.getStatus().getPrivacyStatus(); // PlaylistItem 에는 getUploadStatus 메서드 없음
+
+            if(videoPrivacyStatus.equals("public")) { // 그래서 그냥 public 으로 구분하면 됨
+                System.out.println("searched : " + videoTitle + ", " + videoUploader + ", " + videoId + ", " + videoPrivacyStatus + ")");
+            } else {
+                System.err.println("searched : (" + videoTitle + ", " + videoUploader + ", " + videoId  + ", " + videoPrivacyStatus + ")");
+            }
+            videos.add(videoTitle + ", " + videoUploader + ", " + videoId + ", " + videoPrivacyStatus); // 보여주는건 그냥 다 보여줘도 됨, 그리고 어차피 이건 안 쓸 기능임
+        }
+        return videos;
+    }
+
     public List<Video> initiallyAddVideoDetails(String playlistId) throws IOException {
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
         request.setKey(apiKey);
@@ -53,9 +78,8 @@ public class YoutubeServiceV5 implements YoutubeService{
                 List<String> tags = video.getSnippet().getTags();
 
                 videos.add(video);
-                System.out.println("successfully added : " + videoName + "(" + videoId + ") by " + videoUploader);
-
                 youtubeRepository.initiallyAddVideoDetails(playlistId, videoName, videoId, videoUploader); // 성공
+                System.out.println("successfully added : " + videoName + "(" + videoId + ") by " + videoUploader);
 
             } catch(RuntimeException e) {
                 if(videoPrivacyStatus.equals("unlisted")) {
@@ -96,31 +120,6 @@ public class YoutubeServiceV5 implements YoutubeService{
         */
     }
 
-    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
-        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
-        request.setKey(apiKey);
-        request.setPlaylistId(playlistId);
-        request.setMaxResults(50L);
-        PlaylistItemListResponse response = request.execute();
-
-        List<String> videos = new ArrayList<>();
-
-        for (PlaylistItem item : response.getItems()) {
-            String videoId = item.getSnippet().getResourceId().getVideoId();
-            String videoTitle = item.getSnippet().getTitle();
-            String videoUploader = item.getSnippet().getVideoOwnerChannelTitle();
-            String videoPrivacyStatus = item.getStatus().getPrivacyStatus(); // PlaylistItem 에는 getUploadStatus 메서드 없음
-
-            if(videoPrivacyStatus.equals("public")) { // 그래서 그냥 public 으로 구분하면 됨
-                System.out.println("searched : " + videoTitle + ", " + videoUploader + ", " + videoId + ", " + videoPrivacyStatus + ")");
-            } else {
-                System.err.println("searched : (" + videoTitle + ", " + videoUploader + ", " + videoId  + ", " + videoPrivacyStatus + ")");
-            }
-            videos.add(videoTitle + ", " + videoUploader + ", " + videoId + ", " + videoPrivacyStatus); // 보여주는건 그냥 다 보여줘도 됨, 그리고 어차피 이건 안 쓸 기능임
-        }
-        return videos;
-    }
-
 
 
     public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, String playlistId) throws IOException {
@@ -142,10 +141,10 @@ public class YoutubeServiceV5 implements YoutubeService{
             // 3. DB를 업데이트한다 CRUD 동작은 service가 아니라 repository가 맡아서 한다.
             youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
             // 4. 실제 유튜브 플레이리스트에도 add와 delete를 해준다
-            addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
+            // 테스트를 위해 잠시 주석
+            // addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
             deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
         }
-        return;
     }
 
     public Map<String, Long> getIllegalVideosFromPlaylist(String playlistId) throws IOException {
@@ -193,7 +192,8 @@ public class YoutubeServiceV5 implements YoutubeService{
                     "someTags", playlistId, 5, "someone's Id");
     }
 
-    public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId, long videoPosition) {
+    public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient,
+                                              String playlistId, String videoId, long videoPosition) {
         try {
             GoogleCredential credential = new GoogleCredential()
                     .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
@@ -209,6 +209,38 @@ public class YoutubeServiceV5 implements YoutubeService{
             playlistItemSnippet.setPlaylistId(playlistId);
             playlistItemSnippet.setResourceId(resourceId);
             playlistItemSnippet.setPosition(videoPosition); // added
+
+            PlaylistItem playlistItem = new PlaylistItem();
+            playlistItem.setSnippet(playlistItemSnippet);
+
+            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
+            PlaylistItem response = request.execute();
+
+            return "Video added to playlist: " + response.getId();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Failed to add video to playlist";
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId) {
+        try {
+            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                    .setApplicationName("youtube-add-sample")
+                    .build();
+
+            ResourceId resourceId = new ResourceId();
+            resourceId.setKind("youtube#video");
+            resourceId.setVideoId(videoId);
+
+            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+            playlistItemSnippet.setPlaylistId(playlistId);
+            playlistItemSnippet.setResourceId(resourceId);
+            //playlistItemSnippet.setPosition(videoPosition); // added
 
             PlaylistItem playlistItem = new PlaylistItem();
             playlistItem.setSnippet(playlistItemSnippet);
@@ -258,6 +290,22 @@ public class YoutubeServiceV5 implements YoutubeService{
     }
 
 
+
+    public void tokenTest(OAuth2AuthorizedClient authorizedClient) {
+        System.out.println(authorizedClient.getAccessToken() + "\n");
+        System.out.println("value " + authorizedClient.getAccessToken().getTokenValue());
+        System.out.println("Issued : " + authorizedClient.getAccessToken().getIssuedAt());
+        System.out.println("expire : " + authorizedClient.getAccessToken().getExpiresAt());
+        System.out.println("type : " + authorizedClient.getAccessToken().getTokenType());
+
+        System.out.println("\n" + authorizedClient.getRefreshToken() + "\n");
+
+        StringTokenizer st = new StringTokenizer(authorizedClient.getClientRegistration().toString(), ",");
+        while(st.hasMoreTokens()) {
+            System.out.println(st.nextToken());
+        }
+        System.out.println("\n" + authorizedClient.getPrincipalName());
+    }
 
     public String searchVideo(String query) throws IOException {
         YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));

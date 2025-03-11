@@ -4,21 +4,17 @@ import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import youtube.youtubeProject.domain.User;
+import youtube.youtubeProject.service.UserService;
 import youtube.youtubeProject.service.YoutubeService;
-import youtube.youtubeProject.service.YoutubeServiceV4;
-import youtube.youtubeProject.service.YoutubeServiceV5;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Controller
@@ -27,6 +23,7 @@ public class YoutubeControllerV5 {
 
     //@Autowired
     private final YoutubeService youtubeService;
+    private final UserService userService;
     //private final User user;
 
     @GetMapping("/login")
@@ -36,7 +33,8 @@ public class YoutubeControllerV5 {
 
     @GetMapping("/")
     public String initRegister() {
-        return "memberRegister";//"welcome"; // welcome이 아니라 memberRegister 로 보내야함
+        return "/welcome";
+        //return "memberRegister";
     }
 
     @GetMapping("/welcome")
@@ -139,6 +137,26 @@ public class YoutubeControllerV5 {
 //        String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
 //        return "redirect:/welcome";
 //    }
+
+    @GetMapping("/tokenTest") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
+    public String tokenTest(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, Model model) {
+        youtubeService.tokenTest(authorizedClient);
+        return "redirect:/welcome";
+    }
+
+    @PostMapping("/TestAddVideoToPlaylist") // 테스트용
+    public String TestAddVideoToPlaylist(
+            @RequestParam String customerEmail,
+            @RequestParam String playlistId, @RequestParam String videoId) {
+
+        String accessToken = userService.getAccessTokenByEmail(customerEmail);
+        if (accessToken == null) {
+            return "redirect:/error?message=Customer token not found";
+        }
+
+        String result =  youtubeService.TestAddVideoToPlaylist(accessToken, playlistId, videoId);
+        return "redirect:/welcome";
+    }
 
     /*
     @GetMapping("/add")
