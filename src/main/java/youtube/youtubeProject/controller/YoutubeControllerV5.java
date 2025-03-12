@@ -9,9 +9,9 @@ import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2Aut
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.domain.User;
-import youtube.youtubeProject.service.UserService;
-import youtube.youtubeProject.service.YoutubeService;
+import youtube.youtubeProject.domain.Users;
+import youtube.youtubeProject.service.user.UserService;
+import youtube.youtubeProject.service.youtube.YoutubeService;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,8 +55,9 @@ public class YoutubeControllerV5 {
         //post 받은거 처리하는건 나중에 하자
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
     }*/
+
     @PostMapping("/memberRegister")
-    public String memberRegister(@ModelAttribute User user) {
+    public String memberRegister(@ModelAttribute Users user) {
         //String result =  youtubeService.memberRegister(userId, userPwd, userName);
         //User registerUser = user.save(new User(userId, userPwd, userName)); 이것도 YoutubeSerivce 맹키로 다 만들기
         //post 받은거 처리하는건 나중에 하자
@@ -65,7 +66,6 @@ public class YoutubeControllerV5 {
     }
 
     @GetMapping("{channelId}/playlists") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
-    // 즉 내부적으로 추적하는건 당연히 api써서 내가 해결해야하는거고, 사용자한테 그냥 등록된 리스트 보여주는건 내 db에 저장된걸 보여야함
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
         List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
         model.addAttribute("playlists", playlists);
@@ -73,7 +73,7 @@ public class YoutubeControllerV5 {
     }
 
     @GetMapping("{playlistId}/getVideos") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
-    public String getVideos(@PathVariable String playlistId, Model model) throws IOException {
+    public String getVideos(@PathVariable String playlistId, Model model) {
         try {
             List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
             model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
@@ -110,7 +110,6 @@ public class YoutubeControllerV5 {
     @PostMapping("/fileTrackAndRecover")
     public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
                                       @RequestParam String playlistIdForRecover, Model model) throws IOException {
-//        model.addAttribute("playlistIdForRecover", playlistId);
         System.err.println("\n==================== Music Track And Recover System Start ====================");
         youtubeService.fileTrackAndRecover(authorizedClient, playlistIdForRecover); // 결과 알려주는 동작 추가해도 좋음
         System.err.println("==================== Music Track And Recover System Done ====================\n");
@@ -138,38 +137,33 @@ public class YoutubeControllerV5 {
 //        return "redirect:/welcome";
 //    }
 
-    @GetMapping("/tokenTest") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
+    @GetMapping("/tokenTest")
     public String tokenTest(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, Model model) {
         youtubeService.tokenTest(authorizedClient);
         return "redirect:/welcome";
     }
 
-    @PostMapping("/TestAddVideoToPlaylist") // 테스트용
-    public String TestAddVideoToPlaylist(
-            @RequestParam String customerEmail,
-            @RequestParam String playlistId, @RequestParam String videoId) {
+    @PostMapping("/TestAddVideoToPlaylist")
+    public String TestAddVideoToPlaylist(@RequestParam String customerEmail, @RequestParam String playlistId, @RequestParam String videoId) {
 
-        String accessToken = userService.getAccessTokenByEmail(customerEmail);
+        Users users = userService.getUserByEmail(customerEmail);
+        String accessToken = users.getAccessToken();
+        //String accessToken = userService.getAccessTokenByEmail(customerEmail);
+
+        System.out.println("TestAddVideoToPlaylist - accessToken : " + accessToken);
+
         if (accessToken == null) {
             return "redirect:/error?message=Customer token not found";
         }
 
-        String result =  youtubeService.TestAddVideoToPlaylist(accessToken, playlistId, videoId);
+        userService.TestAddVideoToPlaylist(accessToken, playlistId, videoId);
+
         return "redirect:/welcome";
     }
 
-    /*
-    @GetMapping("/add")
-    public String addForm() {
-        return "addForm";
+//    @GetMapping("/ScheduledTest")
+    public String scheduledTest(Model model) {
+        youtubeService.scheduledTest();
+        return "redirect:/welcome";
     }
-
-    @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes) {
-        Item savedItem = itemService.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
-        redirectAttributes.addAttribute("status", true);
-        return "redirect:/items/{itemId}";
-    }
-     */
 }

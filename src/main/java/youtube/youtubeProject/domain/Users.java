@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +23,11 @@ public class User {
     private String accessToken;
     private String refreshToken;
 
-    public User() {
+    public Users() {
     }
 
-    public User(String userId, String userPassword, String userName, String userHandler,
-                String userEmail, String accessToken, String refreshToken) {
+    public Users(String userId, String userPassword, String userName, String userHandler,
+                 String userEmail, String accessToken, String refreshToken) {
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;

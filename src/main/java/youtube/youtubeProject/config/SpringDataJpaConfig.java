@@ -3,11 +3,16 @@ package youtube.youtubeProject.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import youtube.youtubeProject.repository.*;
-import youtube.youtubeProject.service.UserService;
-import youtube.youtubeProject.service.UserServiceV1;
-import youtube.youtubeProject.service.YoutubeService;
-import youtube.youtubeProject.service.YoutubeServiceV5;
+import youtube.youtubeProject.repository.user.SdjUserRepository;
+import youtube.youtubeProject.repository.user.UserRepository;
+import youtube.youtubeProject.repository.user.UserRepositoryV1;
+import youtube.youtubeProject.repository.youtube.SdjYoutubeRepository;
+import youtube.youtubeProject.repository.youtube.YoutubeRepository;
+import youtube.youtubeProject.repository.youtube.YoutubeRepositoryV5;
+import youtube.youtubeProject.service.user.UserService;
+import youtube.youtubeProject.service.user.UserServiceV1;
+import youtube.youtubeProject.service.youtube.YoutubeService;
+import youtube.youtubeProject.service.youtube.YoutubeServiceV5;
 
 @Configuration
 @RequiredArgsConstructor

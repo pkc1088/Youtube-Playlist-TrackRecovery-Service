@@ -1,4 +1,4 @@
-package youtube.youtubeProject.repository;
+package youtube.youtubeProject.repository.youtube;
 
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;

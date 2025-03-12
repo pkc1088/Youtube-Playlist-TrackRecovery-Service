@@ -1,4 +1,4 @@
-package youtube.youtubeProject.repository;
+package youtube.youtubeProject.repository.youtube;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import youtube.youtubeProject.domain.Music;

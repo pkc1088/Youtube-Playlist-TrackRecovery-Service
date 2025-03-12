@@ -3,10 +3,12 @@ package youtube.youtubeProject;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import youtube.youtubeProject.config.SecurityConfig;
 import youtube.youtubeProject.config.SpringDataJpaConfig;
 
 //@Import({SpringDataJpaConfig.class}) //, SecurityConfig.class
+@EnableScheduling
 @SpringBootApplication(scanBasePackages = "youtube.youtubeProject") //.controller
 public class YoutubeProjectApplication {
 

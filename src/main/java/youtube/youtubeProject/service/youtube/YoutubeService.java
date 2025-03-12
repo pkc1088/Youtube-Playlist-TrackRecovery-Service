@@ -1,4 +1,4 @@
-package youtube.youtubeProject.service;
+package youtube.youtubeProject.service.youtube;
 
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.Video;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface YoutubeService {
-    public String TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId);
+//    public String TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId);
     public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId, long videoPosition);
 
     // 굳이 interface에 선언해야할 이유가 있나 지금
@@ -25,4 +25,6 @@ public interface YoutubeService {
     public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
                                     String playlistId) throws IOException;
     void tokenTest(OAuth2AuthorizedClient authorizedClient);
+
+    void scheduledTest();
 }

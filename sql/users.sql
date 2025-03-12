@@ -8,7 +8,7 @@ CREATE TABLE Users
     user_name varchar(50),
     user_handler varchar(100),
     user_email varchar(50),
-    access_token VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255)
+    access_token VARCHAR(250) NOT NULL,
+    refresh_token VARCHAR(250)
 --     expiry_date TIMESTAMP NOT NULL
 );
