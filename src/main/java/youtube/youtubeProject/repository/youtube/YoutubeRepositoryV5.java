@@ -18,36 +18,34 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
 
     private final SdjYoutubeRepository repository;
 
-    @Override
-    public String addVideoToPlaylist(String playlistId, String videoId, Music music) {
-//        Music music1 = new Music();
+//    @Override
+//    public String addVideoToPlaylist(String playlistId, String videoId, Music music) {
+////        Music music1 = new Music();
+////
+////        repository.save(music);
+//        return null;
+//    }
 //
-//        repository.save(music);
-        return null;
-    }
+//    @Override
+//    public String deleteFromPlaylist(String playlistId, String videoId) {
+//        return null;
+//    }
 
-    @Override
-    public String deleteFromPlaylist(String playlistId, String videoId) {
-        return null;
-    }
-
-    @Override
-    public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
-        return null;
-    }
-
-    @Override
-    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
-        return null;
-    }
+//    @Override
+//    public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
+//        return null;
+//    }
+//
+//    @Override
+//    public List<String> getVideosFromPlaylist(String playlistId) throws IOException {
+//        return null;
+//    }
 
     @Override
     public void initiallyAddVideoDetails(String playlistId, String videoTitle, String videoId, String videoUploader) throws IOException {
         repository.save(new Music(videoId, videoTitle, videoUploader, "someDescription",
                         "someTags", playlistId, 5, "someone's Id"));
 //        Music findPlaylist =repository.findById(Long.valueOf(playlistId)).orElseThrow();
-
-        return;
     }
 
     public String getMusicTitleFromDBThruMusicId(String videoId) {
@@ -81,20 +79,18 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
         return;
     }
 
+//    @Override
+//    public Video getVideoDetails(String videoId) throws IOException {
+//        return null;
+//    }
 
+//    @Override
+//    public String searchVideo(String query) throws IOException {
+//        return null;
+//    }
 
-    @Override
-    public Video getVideoDetails(String videoId) throws IOException {
-        return null;
-    }
-
-    @Override
-    public String searchVideo(String query) throws IOException {
-        return null;
-    }
-
-    public String memberRegister(String userId, String userPwd, String userName) {
-
-        return null;
-    }
+//    public String memberRegister(String userId, String userPwd, String userName) {
+//
+//        return null;
+//    }
 }

@@ -1,17 +1,19 @@
 package youtube.youtubeProject.service.youtube;
 
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Music;
+import youtube.youtubeProject.domain.Users;
+import youtube.youtubeProject.repository.user.UserRepository;
 import youtube.youtubeProject.repository.youtube.YoutubeRepository;
 
 import java.io.IOException;
@@ -24,11 +26,18 @@ public class YoutubeServiceV5 implements YoutubeService {
 
     @Value("${youtube.api.key}")
     private String apiKey;
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String clientId;
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String clientSecret;
+
     private static YouTube youtube;
     private final YoutubeRepository youtubeRepository;
+    private final UserRepository userRepository;
 
-    public YoutubeServiceV5(YoutubeRepository youtubeRepository) {
+    public YoutubeServiceV5(YoutubeRepository youtubeRepository, UserRepository userRepository) {
         this.youtubeRepository = youtubeRepository;// YouTube 객체를 빌드하여 API에 접근할 수 있는 YouTube 클라이언트 생성
+        this.userRepository = userRepository;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
@@ -120,14 +129,22 @@ public class YoutubeServiceV5 implements YoutubeService {
     }
 
 
-
-    public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, String playlistId) throws IOException {
+    public void fileTrackAndRecover(String userEmail, String playlistId) throws IOException {
 
         Map<String, Long> videos = getIllegalVideosFromPlaylist(playlistId); // videoId, Position 뽑기
         if(videos.isEmpty()) {
             System.err.println("There's no music to recover");
             return;
         }
+
+        /* accessToken <- refreshToken update logic */
+        System.err.println("once a day");
+        Users user = userRepository.findByUserEmail(userEmail);
+        String refreshToken = user.getRefreshToken();
+        String accessToken = refreshAccessToken(refreshToken);
+        // refresh 로 업뎃한 accessToken 을 다시 디비에 업데이트할 필요는 없다
+        System.err.println("AccessToken updated : " + accessToken);
+
 
         for (String videoIdToDelete : videos.keySet()) { // illegal video가 여러개일 수 있으니
             long videoPosition = videos.get(videoIdToDelete);
@@ -140,8 +157,10 @@ public class YoutubeServiceV5 implements YoutubeService {
             // 3. DB를 업데이트한다 CRUD 동작은 service가 아니라 repository가 맡아서 한다.
             youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
             // 4. 실제 유튜브 플레이리스트에도 add와 delete를 해준다
-            addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
-            deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
+            TestAddVideoToPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
+            TestDeleteFromPlaylist(accessToken, playlistId, videoIdToDelete);
+            //addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
+            //deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
         }
     }
 
@@ -190,10 +209,43 @@ public class YoutubeServiceV5 implements YoutubeService {
                     "someTags", playlistId, 5, "someone's Id");
     }
 
-    public String deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
+    public void TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId, long videoPosition) {
         try {
-            GoogleCredential credential = new GoogleCredential()
-                    .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
+//            /* accessToken <- refreshToken update logic 근데 이걸 add에 두지말고 더 상위에 두자*/
+//            System.err.println("once a day");
+//            Users user = userRepository.findByUserEmail(userEmail);
+//            String refreshToken = user.getRefreshToken();
+//            String accessToken = refreshAccessToken(refreshToken); // refresh로 업뎃한 access를 다시 디비에 업데이트할 필요없다
+//            System.err.println("AccessToken updated");
+            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                    .setApplicationName("youtube-add-sample")
+                    .build();
+
+            ResourceId resourceId = new ResourceId();
+            resourceId.setKind("youtube#video");
+            resourceId.setVideoId(videoId);
+            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+            playlistItemSnippet.setPlaylistId(playlistId);
+            playlistItemSnippet.setResourceId(resourceId);
+            playlistItemSnippet.setPosition(videoPosition); // added
+            PlaylistItem playlistItem = new PlaylistItem();
+            playlistItem.setSnippet(playlistItemSnippet);
+
+            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
+            PlaylistItem response = request.execute();
+            System.err.println("completely added video(" + videoId + ") to " + playlistId);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void TestDeleteFromPlaylist(String accessToken, String playlistId, String videoId) {
+        try {
+            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
             YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
                     .setApplicationName("youtube-cmdline-deletefrom-playlist-sample")
                     .build();
@@ -211,81 +263,46 @@ public class YoutubeServiceV5 implements YoutubeService {
                 if (playlistItem.getSnippet().getResourceId().getVideoId().equals(videoId)) {
                     YouTube.PlaylistItems.Delete deleteRequest = youtube.playlistItems().delete(playlistItem.getId());
                     deleteRequest.execute();
-                    return "Video deleted from playlist: " + videoId;
+                    return;
                 }
             }
 
-            return "Video not found in playlist: " + videoId;
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
-            return "Failed to delete video from playlist";
         }
     }
 
-    public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId, long videoPosition) {
+    public String refreshAccessToken(String refreshToken) { // 사실 이게 핵심인듯?
         try {
-            GoogleCredential credential = new GoogleCredential()
-                    .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
-            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
-                    .setApplicationName("youtube-cmdline-addto-playlist-sample")
-                    .build();
-
-            ResourceId resourceId = new ResourceId();
-            resourceId.setKind("youtube#video");
-            resourceId.setVideoId(videoId);
-
-            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
-            playlistItemSnippet.setPlaylistId(playlistId);
-            playlistItemSnippet.setResourceId(resourceId);
-            playlistItemSnippet.setPosition(videoPosition); // added
-
-            PlaylistItem playlistItem = new PlaylistItem();
-            playlistItem.setSnippet(playlistItemSnippet);
-
-            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
-            PlaylistItem response = request.execute();
-
-            return "Video added to playlist: " + response.getId();
+            GoogleRefreshTokenRequest refreshTokenRequest = new GoogleRefreshTokenRequest(
+                    new NetHttpTransport(),
+                    new GsonFactory(),
+                    refreshToken,
+                    clientId,
+                    clientSecret
+            );
+            TokenResponse tokenResponse = refreshTokenRequest.execute();
+            return tokenResponse.getAccessToken();
         } catch (IOException e) {
             e.printStackTrace();
-            return "Failed to add video to playlist";
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to refresh access token");
         }
     }
 
-
-
-    public void tokenTest(OAuth2AuthorizedClient authorizedClient) {
-        System.out.println(authorizedClient.getAccessToken() + "\n");
-        System.out.println("value " + authorizedClient.getAccessToken().getTokenValue());
-        System.out.println("Issued : " + authorizedClient.getAccessToken().getIssuedAt());
-        System.out.println("expire : " + authorizedClient.getAccessToken().getExpiresAt());
-        System.out.println("type : " + authorizedClient.getAccessToken().getTokenType());
-
-        System.out.println("\n" + authorizedClient.getRefreshToken() + "\n");
-
-        StringTokenizer st = new StringTokenizer(authorizedClient.getClientRegistration().toString(), ",");
-        while(st.hasMoreTokens()) {
-            System.out.println(st.nextToken());
-        }
-        System.out.println("\n" + authorizedClient.getPrincipalName());
-    }
-
-    public String searchVideo(String query) throws IOException {
-        YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
-        search.setKey(apiKey);
-        search.setQ(query);
-        SearchListResponse searchResponse = search.execute();                   // 검색 요청 실행 및 응답 받아오기
-        List<SearchResult> searchResultList = searchResponse.getItems();        // 검색 결과에서 동영상 목록 가져오기
-        if (searchResultList != null && searchResultList.size() > 0) {
-            SearchResult searchResult = searchResultList.get(0);                //검색 결과 중 첫 번째 동영상 정보 가져오기
-            String videoId = searchResult.getId().getVideoId();                 // 동영상의 ID와 제목 가져오기
-            String videoTitle = searchResult.getSnippet().getTitle();
-            return "Title: " + videoTitle + "\nURL: https://www.youtube.com/watch?v=" + videoId;
-        }
-        return "검색 결과가 없습니다";
-    }
+//    public String searchVideo(String query) throws IOException {
+//        YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
+//        search.setKey(apiKey);
+//        search.setQ(query);
+//        SearchListResponse searchResponse = search.execute();                   // 검색 요청 실행 및 응답 받아오기
+//        List<SearchResult> searchResultList = searchResponse.getItems();        // 검색 결과에서 동영상 목록 가져오기
+//        if (searchResultList != null && searchResultList.size() > 0) {
+//            SearchResult searchResult = searchResultList.get(0);                //검색 결과 중 첫 번째 동영상 정보 가져오기
+//            String videoId = searchResult.getId().getVideoId();                 // 동영상의 ID와 제목 가져오기
+//            String videoTitle = searchResult.getSnippet().getTitle();
+//            return "Title: " + videoTitle + "\nURL: https://www.youtube.com/watch?v=" + videoId;
+//        }
+//        return "검색 결과가 없습니다";
+//    }
 
     public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
         YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
@@ -296,7 +313,134 @@ public class YoutubeServiceV5 implements YoutubeService {
         return response.getItems();
     }
 
-    public String memberRegister(String userId, String userPwd, String userName) {
-        return null;
-    }
+
+//original fileTrackAndRecover
+// soon delete
+//    public void fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, String playlistId) throws IOException {
+//
+//        Map<String, Long> videos = getIllegalVideosFromPlaylist(playlistId); // videoId, Position 뽑기
+//        if(videos.isEmpty()) {
+//            System.err.println("There's no music to recover");
+//            return;
+//        }
+//        try {
+//            /* accessToken <- refreshToken update logic 근데 이걸 add에 두지말고 더 상위에 두자*/
+//            System.err.println("once a day");
+//            Users user = userRepository.findByUserEmail(userEmail);
+//            String refreshToken = user.getRefreshToken();
+//            String accessToken = refreshAccessToken(refreshToken); // refresh로 업뎃한 access를 다시 디비에 업데이트할 필요없다
+//            System.err.println("AccessToken updated");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (GeneralSecurityException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//
+//        for (String videoIdToDelete : videos.keySet()) { // illegal video가 여러개일 수 있으니
+//            long videoPosition = videos.get(videoIdToDelete);
+//            System.err.println("Tracked Illegal Music (" + videoIdToDelete + ") at index " + videoPosition);
+//
+//            // 1. DB에서 videoId로 검색해서 백업된 videoTitle을 가져옴
+//            String titleToSearch = youtubeRepository.getMusicTitleFromDBThruMusicId(videoIdToDelete);
+//            // 2. 그 videoTitle로 유튜브에 검색을 함 search 해서 return Video로 받음
+//            Music videoForRecovery = searchVideoToReplace(titleToSearch, playlistId);
+//            // 3. DB를 업데이트한다 CRUD 동작은 service가 아니라 repository가 맡아서 한다.
+//            youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
+//            // 4. 실제 유튜브 플레이리스트에도 add와 delete를 해준다
+//            addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
+//            // TestAddVideoToPlaylist(String userEmail, String playlistId, String videoId);
+//            deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
+//        }
+//    }
+
+    // soon delete
+//    public String deleteFromPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId) {
+//        try {
+//            GoogleCredential credential = new GoogleCredential()
+//                    .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
+//            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+//                    .setApplicationName("youtube-cmdline-deletefrom-playlist-sample")
+//                    .build();
+//
+//            // 재생목록에서 영상을 찾기 위해 playlistItems.list 호출
+//            YouTube.PlaylistItems.List playlistItemsRequest = youtube.playlistItems().list(Collections.singletonList("id,snippet"));
+//            playlistItemsRequest.setPlaylistId(playlistId);
+//            playlistItemsRequest.setMaxResults(50L);
+//
+//            PlaylistItemListResponse playlistItemsResponse = playlistItemsRequest.execute();
+//            List<PlaylistItem> playlistItems = playlistItemsResponse.getItems();
+//
+//            // 영상 ID와 일치하는 재생목록 항목을 찾음
+//            for (PlaylistItem playlistItem : playlistItems) {
+//                if (playlistItem.getSnippet().getResourceId().getVideoId().equals(videoId)) {
+//                    YouTube.PlaylistItems.Delete deleteRequest = youtube.playlistItems().delete(playlistItem.getId());
+//                    deleteRequest.execute();
+//                    return "Video deleted from playlist: " + videoId;
+//                }
+//            }
+//
+//            return "Video not found in playlist: " + videoId;
+//        } catch (IOException | GeneralSecurityException e) {
+//            e.printStackTrace();
+//            return "Failed to delete video from playlist";
+//        }
+//    }
+
+    // soon delete
+//    public String addVideoToPlaylist(OAuth2AuthorizedClient authorizedClient, String playlistId, String videoId, long videoPosition) {
+//        try {
+//            GoogleCredential credential = new GoogleCredential()
+//                    .setAccessToken(authorizedClient.getAccessToken().getTokenValue());
+//            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+//                    .setApplicationName("youtube-cmdline-addto-playlist-sample")
+//                    .build();
+//
+//            ResourceId resourceId = new ResourceId();
+//            resourceId.setKind("youtube#video");
+//            resourceId.setVideoId(videoId);
+//
+//            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+//            playlistItemSnippet.setPlaylistId(playlistId);
+//            playlistItemSnippet.setResourceId(resourceId);
+//            playlistItemSnippet.setPosition(videoPosition); // added
+//
+//            PlaylistItem playlistItem = new PlaylistItem();
+//            playlistItem.setSnippet(playlistItemSnippet);
+//
+//            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
+//            PlaylistItem response = request.execute();
+//
+//            return "Video added to playlist: " + response.getId();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return "Failed to add video to playlist";
+//        } catch (GeneralSecurityException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+
+
+
+
+//    public void tokenTest(OAuth2AuthorizedClient authorizedClient) {
+//        System.out.println(authorizedClient.getAccessToken() + "\n");
+//        System.out.println("value " + authorizedClient.getAccessToken().getTokenValue());
+//        System.out.println("Issued : " + authorizedClient.getAccessToken().getIssuedAt());
+//        System.out.println("expire : " + authorizedClient.getAccessToken().getExpiresAt());
+//        System.out.println("type : " + authorizedClient.getAccessToken().getTokenType());
+//
+//        System.out.println("\n" + authorizedClient.getRefreshToken() + "\n");
+//
+//        StringTokenizer st = new StringTokenizer(authorizedClient.getClientRegistration().toString(), ",");
+//        while(st.hasMoreTokens()) {
+//            System.out.println(st.nextToken());
+//        }
+//        System.out.println("\n" + authorizedClient.getPrincipalName());
+//    }
+//
+//    public String memberRegister(String userId, String userPwd, String userName) {
+//        return null;
+//    }
 }

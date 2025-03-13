@@ -75,14 +75,14 @@ public class YoutubeControllerV5 {
     }
     */
 
-    @GetMapping("{channelId}/playlists") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
+    @GetMapping("{channelId}/playlists") // - just for test
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
         List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
         model.addAttribute("playlists", playlists);
         return "playlists";
     }
 
-    @GetMapping("{playlistId}/getVideos") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
+    @GetMapping("{playlistId}/getVideos") // - just for test
     public String getVideos(@PathVariable String playlistId, Model model) {
         try {
             List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
@@ -106,14 +106,26 @@ public class YoutubeControllerV5 {
         return "addVideos";
     }
 
-    @PostMapping("/fileTrackAndRecover") // remove soon
-    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
-                                      @RequestParam String playlistIdForRecover, Model model) throws IOException {
-        System.err.println("\n==================== Music Track And Recover System Start ====================");
-        youtubeService.fileTrackAndRecover(authorizedClient, playlistIdForRecover); // 결과 알려주는 동작 추가해도 좋음
-        System.err.println("==================== Music Track And Recover System Done ====================\n");
-        return "redirect:/welcome";
-    }
+//    @PostMapping("/fileTrackAndRecover") // remove soon - just for test
+//    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
+//                                      @RequestParam String playlistIdForRecover, Model model) throws IOException {
+//        System.err.println("\n==================== Music Track And Recover System Start ====================");
+////        youtubeService.fileTrackAndRecover(authorizedClient, playlistIdForRecover); // 결과 알려주는 동작 추가해도 좋음
+//        youtubeService.fileTrackAndRecover("emailsomething", playlistIdForRecover); // 결과 알려주는 동작 추가해도 좋음
+//        System.err.println("==================== Music Track And Recover System Done ====================\n");
+//        return "redirect:/welcome";
+//    }
+
+//    @PostMapping("/TestAddVideoToPlaylist") // remove soon - just for test
+//    public String TestAddVideoToPlaylist(@RequestParam String customerEmail, @RequestParam String playlistId, @RequestParam String videoId) {
+//
+//        Users users = userService.getUserByEmail(customerEmail);
+//        System.out.println("TestAddVideoToPlaylist");
+//        youtubeService.TestAddVideoToPlaylist(customerEmail, playlistId, videoId); // accesstoken -> customerEmail
+//
+//        return "redirect:/welcome";
+//    }
+
 
 //    @GetMapping("search") // 필요없음 이건 내부적으로 수행해야함
 //    public String searchVideo(@RequestParam String keyword, Model model) throws IOException {
@@ -135,29 +147,14 @@ public class YoutubeControllerV5 {
 //        String result = youtubeService.deleteFromPlaylist(authorizedClient, playlistId, videoId);
 //        return "redirect:/welcome";
 //    }
-
-    @GetMapping("/tokenTest")
-    public String tokenTest(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, Model model) {
-        youtubeService.tokenTest(authorizedClient);
-        return "redirect:/welcome";
-    }
-
-    @PostMapping("/TestAddVideoToPlaylist")
-    public String TestAddVideoToPlaylist(@RequestParam String customerEmail, @RequestParam String playlistId, @RequestParam String videoId) {
-        Users users = userService.getUserByEmail(customerEmail);
-//        String accessToken = users.getAccessToken();
-        System.out.println("TestAddVideoToPlaylist");
-//        if (accessToken == null) {
-//            return "redirect:/error?message=Customer token not found";
-//        }
-        userService.TestAddVideoToPlaylist(customerEmail, playlistId, videoId); // accesstoken -> customerEmail
-
-        return "redirect:/welcome";
-    }
-
-    @GetMapping("/ScheduledTest")
-    public String scheduledTest(Model model) {
-        //youtubeService.scheduledTest();
-        return "redirect:/welcome";
-    }
+//    @GetMapping("/tokenTest")
+//    public String tokenTest(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient, Model model) {
+//        youtubeService.tokenTest(authorizedClient);
+//        return "redirect:/welcome";
+//    }
+//    @GetMapping("/ScheduledTest")
+//    public String scheduledTest(Model model) {
+//        //youtubeService.scheduledTest();
+//        return "redirect:/welcome";
+//    }
 }

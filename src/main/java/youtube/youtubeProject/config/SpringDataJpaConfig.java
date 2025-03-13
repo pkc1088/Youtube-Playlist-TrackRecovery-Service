@@ -23,7 +23,12 @@ public class SpringDataJpaConfig {
 
     @Bean
     public YoutubeService youtubeService() {
-        return new YoutubeServiceV5(youtubeRepository());
+        return new YoutubeServiceV5(youtubeRepository(), userRepository());
+    }
+
+    @Bean
+    public UserService userService() {
+        return new UserServiceV1(userRepository());
     }
 
     @Bean
@@ -31,10 +36,6 @@ public class SpringDataJpaConfig {
         return new YoutubeRepositoryV5(springDataJpaYoutubeRepository);
     }
 
-    @Bean
-    public UserService userService() {
-        return new UserServiceV1(userRepository());
-    }
 
     @Bean
     public UserRepository userRepository() {
