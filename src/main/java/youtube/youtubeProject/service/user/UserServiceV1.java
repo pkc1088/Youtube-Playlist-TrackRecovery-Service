@@ -35,13 +35,13 @@ public class UserServiceV1 implements UserService {
     // access_token이 만료되었는지 확인 <- 만료기한은 1시간인데 나는 하루에 한번만 체크하니 무조건 만료일것임
     private boolean isAccessTokenExpired(String accessToken) {
         // 예: JWT 토큰의 경우, payload에서 `exp` 필드를 확인
-        return true; // 임시로 true 반환
+        return true;
     }
 
     public void TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId) {
-        System.err.println("trying to add video thru token");
+        System.err.println("trying to add video via token");
         try {
-            if (isAccessTokenExpired(accessToken)) {
+            if (isAccessTokenExpired(accessToken)) { // 항상 true 임
                 System.err.println("AccessToken expired");
                 Users user = userRepository.findByAccessToken(accessToken);
                 String refreshToken = user.getRefreshToken();
@@ -54,7 +54,6 @@ public class UserServiceV1 implements UserService {
             }
 
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-
             YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
                     .setApplicationName("youtube-add-sample")
                     .build();
@@ -62,18 +61,16 @@ public class UserServiceV1 implements UserService {
             ResourceId resourceId = new ResourceId();
             resourceId.setKind("youtube#video");
             resourceId.setVideoId(videoId);
-
             PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
             playlistItemSnippet.setPlaylistId(playlistId);
             playlistItemSnippet.setResourceId(resourceId);
             //playlistItemSnippet.setPosition(videoPosition); // added
-
             PlaylistItem playlistItem = new PlaylistItem();
             playlistItem.setSnippet(playlistItemSnippet);
 
             YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
             PlaylistItem response = request.execute();
-            System.err.println("completely video added");
+            System.err.println("completely added video(" + videoId + ") to " + playlistId);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -99,7 +96,7 @@ public class UserServiceV1 implements UserService {
         }
     }
 
-    public String getAccessTokenByEmail(String email) { // thorw 추가했음
+    public String getAccessTokenByEmail(String email) { // throw 추가했음
         Users user = userRepository.findByUserEmail(email);
         if (user != null) {
             return user.getAccessToken();
@@ -112,7 +109,7 @@ public class UserServiceV1 implements UserService {
         if (user != null) {
             return user;
         }
-        throw new RuntimeException("User not found");
+        throw new RuntimeException("User not found - getUserByEmail");
     }
 
     public Users getUserByAccessToken(String accessToken) {
@@ -120,13 +117,18 @@ public class UserServiceV1 implements UserService {
         if (user != null) {
             return user;
         }
-        throw new RuntimeException("User not found");
+        throw new RuntimeException("User not found - getUserByAccessToken");
     }
 
     @Override
     public void saveUser(Users user) {
         //saveUser(user);
         userRepository.saveUser(user);
+    }
+
+    @Override
+    public void updateRefreshTokenByLogin(String email, String refreshToken) {
+        userRepository.updateRefreshTokenByLogin(email, refreshToken);
     }
 
 //    public void saveTokens(OAuth2AuthorizedClient authorizedClient, String email) { // temp test

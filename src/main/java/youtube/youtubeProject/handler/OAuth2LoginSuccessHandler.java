@@ -27,7 +27,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService; // 추가
 
-
     public OAuth2LoginSuccessHandler(UserService userService, OAuth2AuthorizedClientService authorizedClientService) {
         this.userService = userService;
         this.authorizedClientService = authorizedClientService;
@@ -35,9 +34,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // OAuth2 회원가입 성공 후 처리
-        System.err.println("onAuthentication Success");
 
+        System.err.println("onAuthentication Success");
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
                     oauthToken.getAuthorizedClientRegistrationId(),
@@ -47,27 +45,56 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             String accessToken = authorizedClient.getAccessToken().getTokenValue();
             String refreshToken = authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken().getTokenValue() : null;
             String email = ((OidcUser) oauthToken.getPrincipal()).getEmail();
-            // 임시 이메일 주소인지 확인
-            if (isTemporaryEmail(email)) {
+
+            if (isTemporaryEmail(email)) {// 임시 이메일 주소인지 확인
                 System.err.println("TemporaryEmail");
                 email = getRealEmail(email, oauthToken);// 실제 이메일 주소 요청 (추가 로직 필요)
             }
 
-            /**
-             * email 중복 되는지 반드시 체크해야함 나중에
-             */
-            saveUsersToDatabase(email, accessToken, refreshToken);
+            if(true) {
+                System.out.println("got ace : " + accessToken);
+                System.out.println("got ref : " + refreshToken); // ~19AyboNhX0o
+                System.out.println("got nam : " + oauthToken.getPrincipal().getName()); // 112735690496635663877
+                System.out.println("got rID : " + oauthToken.getAuthorizedClientRegistrationId()); // google
+                System.out.println("got ema : " + oauthToken.getPrincipal().getAttribute("email"));
+                System.out.println("getFullName : " + ((OidcUser) oauthToken.getPrincipal()).getFullName());
+                System.out.println("getProfile : " + ((OidcUser) oauthToken.getPrincipal()).getProfile());
+                System.out.println("getIdToken : " + ((OidcUser) oauthToken.getPrincipal()).getIdToken());
+            } // 정보 출력
+
+            /* email 중복 되는지 반드시 체크 */
+            if(alreadyMember(email)) { // registered member
+                updateRefreshTokenByLogin(email, accessToken, refreshToken);
+            } else { // new member
+                saveUsersToDatabase(email, accessToken, refreshToken);
+            }
         }
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
-    private void saveUsersToDatabase(String email, String accessToken, String refreshToken) {
-        // 데이터베이스에 저장하는 로직 구현
-        // 예: UserRepository를 사용하여 사용자 정보와 토큰 저장
-        System.out.println("Saved Email: " + email);
-        System.out.println("Saved Access Token: " + accessToken);
-        System.out.println("Saved Refresh Token: " + refreshToken);
+    private boolean alreadyMember(String email) {
+        try{
+            if(email.equals(userService.getUserByEmail(email).getUserEmail())) {
+                System.err.println("Registered Member");
+                return true;
+            }
+        } catch (RuntimeException e) {
+            System.err.println("New member");
+        }
+        return false;
+    }
 
+    private void updateRefreshTokenByLogin(String email, String accessToken, String refreshToken) {
+        System.out.println("old member Email: " + email);
+        System.out.println("old member Access Token: " + accessToken);
+        System.out.println("old member Refresh Token: " + refreshToken);
+        userService.updateRefreshTokenByLogin(email, refreshToken); // login 시 refreshToken 업데이트
+    }
+
+    private void saveUsersToDatabase(String email, String accessToken, String refreshToken) {
+        System.out.println("new member Email: " + email);
+        System.out.println("new member Access Token: " + accessToken);
+        System.out.println("new member Refresh Token: " + refreshToken);
         userService.saveUser(
                 new Users("someId", "somePwd", "username", "userHandler",
                         email, accessToken, refreshToken));
@@ -78,8 +105,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     }
 
     private String getRealEmail(String email, OAuth2AuthenticationToken oauthToken) {
-        // 실제 이메일 주소를 요청하는 로직
-        // 예: Google People API를 사용해 프로필 정보 조회
         StringTokenizer st = new StringTokenizer(email, "-");
         return st.nextToken() + "@gmail.com";
         //return oauthToken.getPrincipal().getAttribute("email");

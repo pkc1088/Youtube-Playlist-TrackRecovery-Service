@@ -10,5 +10,7 @@ public interface UserRepository {
 
     void updateAccessTokenByRefreshToken(String refreshToken, String accessToken);
 
+    void updateRefreshTokenByLogin(String email, String refreshToken);
+
     //void saveTokens(User user);
 }

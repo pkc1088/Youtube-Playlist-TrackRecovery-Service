@@ -39,6 +39,16 @@ public class UserRepositoryV1 implements UserRepository {
         repository.save(user);
     }
 
+    @Override
+    public void updateRefreshTokenByLogin(String email, String refreshToken) {
+        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByUserEmail(email));
+        if(optionalUsers.isPresent()) {
+            Users user = optionalUsers.get();
+            user.setRefreshToken(refreshToken);
+        }
+    }
+
+
 //    @Override
 //    public void saveTokens(User user) {
 //        // 여기서 DB에 저장?

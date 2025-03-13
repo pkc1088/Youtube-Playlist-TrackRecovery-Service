@@ -21,10 +21,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class YoutubeControllerV5 {
 
-    //@Autowired
     private final YoutubeService youtubeService;
     private final UserService userService;
-    //private final User user;
+
 
     @GetMapping("/login")
     public String loginPage() {
@@ -34,7 +33,6 @@ public class YoutubeControllerV5 {
     @GetMapping("/")
     public String initRegister() {
         return "/welcome";
-        //return "memberRegister";
     }
 
     @GetMapping("/welcome")
@@ -42,19 +40,30 @@ public class YoutubeControllerV5 {
         return "welcome";
     }
 
+    /*
+    @GetMapping("/mySignup")
+    public String signup() {
+        return "redirect:/oauth2/authorization/google?prompt=consent&access_type=offline";
+    }
+    // 로그인 시 (prompt=none)
+    @GetMapping("/myLogin")
+    public String login() {
+        return "redirect:/oauth2/authorization/google?prompt=none";
+    }
+
     @GetMapping("/memberRegister")
     public String memberRegister() {
         return "memberRegister";
     }
 
-    /*@PostMapping("/memberRegister3")
+    @PostMapping("/memberRegister3")
     public String memberRegister3(@RequestParam String userId, @RequestParam String userPwd,
                                  @RequestParam String userName, @RequestParam String userHandler) {
         //String result =  youtubeService.memberRegister(userId, userPwd, userName);
         //User registerUser = user.save(new User(userId, userPwd, userName)); 이것도 YoutubeSerivce 맹키로 다 만들기
         //post 받은거 처리하는건 나중에 하자
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
-    }*/
+    }
 
     @PostMapping("/memberRegister")
     public String memberRegister(@ModelAttribute Users user) {
@@ -64,6 +73,7 @@ public class YoutubeControllerV5 {
         //log.info("member registered");
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
     }
+    */
 
     @GetMapping("{channelId}/playlists") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
     public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
@@ -83,17 +93,6 @@ public class YoutubeControllerV5 {
         }
         return "getVideos";
     }
-//    @GetMapping("{playlistId}/getVideos") // 단순 보여주는 용도 (api 호출해서 보여주는게 아니라, 내 db에 있는 정보를 보여줘야함)
-//    public String getVideos(@PathVariable String playlistId, Model model) throws IOException {
-//        try {
-//            Map<String, String> videos = youtubeService.getVideosFromPlaylist(playlistId);
-//            model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
-//        } catch (IOException e) {
-//            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
-//            e.printStackTrace();
-//        }
-//        return "getVideos";
-//    }
 
     @GetMapping("{playlistId}/initiallyAddVideoDetails") // not done
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
@@ -151,7 +150,6 @@ public class YoutubeControllerV5 {
         //String accessToken = userService.getAccessTokenByEmail(customerEmail);
 
         System.out.println("TestAddVideoToPlaylist - accessToken : " + accessToken);
-
         if (accessToken == null) {
             return "redirect:/error?message=Customer token not found";
         }
@@ -161,7 +159,7 @@ public class YoutubeControllerV5 {
         return "redirect:/welcome";
     }
 
-//    @GetMapping("/ScheduledTest")
+    @GetMapping("/ScheduledTest")
     public String scheduledTest(Model model) {
         youtubeService.scheduledTest();
         return "redirect:/welcome";

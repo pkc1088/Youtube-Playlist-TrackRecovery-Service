@@ -1,8 +1,5 @@
 package youtube.youtubeProject.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.context.annotation.Bean;
@@ -11,17 +8,12 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig { // extends SimpleUrlAuthenticationSuccessHandler
+public class SecurityConfig {
 
     private final AuthenticationSuccessHandler oauth2LoginSuccessHandler; // ADDED
 
@@ -59,8 +51,9 @@ public class SecurityConfig { // extends SimpleUrlAuthenticationSuccessHandler
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> cookieAuthorizationRequestRepository() {
         return new HttpSessionOAuth2AuthorizationRequestRepository();
     }
+}
 
-
+/*
 //    @Bean
 //    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
 //            ClientRegistrationRepository clientRegistrationRepository) {
@@ -84,10 +77,6 @@ public class SecurityConfig { // extends SimpleUrlAuthenticationSuccessHandler
 //            }
 //        };
 //    }
-
-}
-
-/*
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Configuration(proxyBeanMethods = false)
