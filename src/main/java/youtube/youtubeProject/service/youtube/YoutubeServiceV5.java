@@ -6,6 +6,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -139,7 +140,6 @@ public class YoutubeServiceV5 implements YoutubeService {
             // 3. DB를 업데이트한다 CRUD 동작은 service가 아니라 repository가 맡아서 한다.
             youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
             // 4. 실제 유튜브 플레이리스트에도 add와 delete를 해준다
-            // 테스트를 위해 잠시 주석
             addVideoToPlaylist(authorizedClient, playlistId, videoForRecovery.getVideoId(), videoPosition);
             deleteFromPlaylist(authorizedClient, playlistId, videoIdToDelete);
         }
@@ -255,11 +255,6 @@ public class YoutubeServiceV5 implements YoutubeService {
     }
 
 
-    // @Scheduled(fixedRate = 3000, initialDelayString = "5000")
-    // @Scheduled(cron = "0 0 18 * * *")     // 매일 오후 18시에 실행
-    public void scheduledTest() {
-        System.out.println("called from scheduledTest");
-    }
 
     public void tokenTest(OAuth2AuthorizedClient authorizedClient) {
         System.out.println(authorizedClient.getAccessToken() + "\n");

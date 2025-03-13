@@ -21,20 +21,6 @@ public class UserRepositoryV1 implements UserRepository {
         return repository.findByUserEmail(email);
     }
 
-    public Users findByAccessToken(String email) {
-        return repository.findByAccessToken(email);
-    }
-
-    @Override
-    public void updateAccessTokenByRefreshToken(String refreshToken, String accessToken) {
-        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByAccessToken(accessToken));
-        if(optionalUsers.isPresent()) {
-            Users user = optionalUsers.get();
-            user.setAccessToken(accessToken);
-            //user.setRefreshToken(refreshToken);
-        }
-    }
-
     public void saveUser(Users user) {
         repository.save(user);
     }
@@ -48,15 +34,18 @@ public class UserRepositoryV1 implements UserRepository {
         }
     }
 
-
-//    @Override
-//    public void saveTokens(User user) {
-//        // 여기서 DB에 저장?
-//        System.out.println("------------- user info -------------");
-//        System.out.println(user.getUserId());
-//        System.out.println(user.getAccessToken());
-//        System.out.println(user.getUserEmail());
-//        System.out.println(user.getUserName());
+//    public Users findByAccessToken(String email) {
+//        return repository.findByAccessToken(email);
 //    }
 
+//    @Override
+//    public void updateAccessTokenByRefreshToken(String refreshToken, String accessToken) {
+//        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByAccessToken(accessToken));
+//        if(optionalUsers.isPresent()) {
+//            Users user = optionalUsers.get();
+////            user.setAccessToken(accessToken);
+//            System.err.println("what?");
+//            //user.setRefreshToken(refreshToken);
+//        }
+//    }
 }

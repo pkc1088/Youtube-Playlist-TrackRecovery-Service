@@ -42,9 +42,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     oauthToken.getName()
             );
 
-            String accessToken = authorizedClient.getAccessToken().getTokenValue();
+            //String accessToken = authorizedClient.getAccessToken().getTokenValue();
             String refreshToken = authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken().getTokenValue() : null;
             String email = ((OidcUser) oauthToken.getPrincipal()).getEmail();
+            String id = oauthToken.getPrincipal().getName();
+            String fullName = ((OidcUser) oauthToken.getPrincipal()).getFullName();
 
             if (isTemporaryEmail(email)) {// 임시 이메일 주소인지 확인
                 System.err.println("TemporaryEmail");
@@ -52,21 +54,23 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             }
 
             if(true) {
-                System.out.println("got ace : " + accessToken);
+                //System.out.println("got ace : " + accessToken);
                 System.out.println("got ref : " + refreshToken); // ~19AyboNhX0o
-                System.out.println("got nam : " + oauthToken.getPrincipal().getName()); // 112735690496635663877
-                System.out.println("got rID : " + oauthToken.getAuthorizedClientRegistrationId()); // google
-                System.out.println("got ema : " + oauthToken.getPrincipal().getAttribute("email"));
-                System.out.println("getFullName : " + ((OidcUser) oauthToken.getPrincipal()).getFullName());
-                System.out.println("getProfile : " + ((OidcUser) oauthToken.getPrincipal()).getProfile());
-                System.out.println("getIdToken : " + ((OidcUser) oauthToken.getPrincipal()).getIdToken());
+                System.out.println("got email : " + oauthToken.getPrincipal().getAttribute("email"));
+                System.out.println("got name : " + fullName); // 112735690496635663877
+                System.out.println("got ID : " + id); // google
+//                System.out.println("getFullName : " + ((OidcUser) oauthToken.getPrincipal()).getFullName());
+//                System.out.println("getProfile : " + ((OidcUser) oauthToken.getPrincipal()).getProfile());
+//                System.out.println("getIdToken : " + ((OidcUser) oauthToken.getPrincipal()).getIdToken());
             } // 정보 출력
 
             /* email 중복 되는지 반드시 체크 */
             if(alreadyMember(email)) { // registered member
-                updateRefreshTokenByLogin(email, accessToken, refreshToken);
+                //updateRefreshTokenByLogin(email, accessToken, refreshToken);
+                updateRefreshTokenByLogin(email, refreshToken);
             } else { // new member
-                saveUsersToDatabase(email, accessToken, refreshToken);
+                //saveUsersToDatabase(email, accessToken, refreshToken);
+                saveUsersToDatabase(email, id, fullName, refreshToken);
             }
         }
         super.onAuthenticationSuccess(request, response, authentication);
@@ -84,20 +88,20 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         return false;
     }
 
-    private void updateRefreshTokenByLogin(String email, String accessToken, String refreshToken) {
+    private void updateRefreshTokenByLogin(String email, /*String accessToken, */String refreshToken) {
         System.out.println("old member Email: " + email);
-        System.out.println("old member Access Token: " + accessToken);
+//        System.out.println("old member Access Token: " + accessToken);
         System.out.println("old member Refresh Token: " + refreshToken);
         userService.updateRefreshTokenByLogin(email, refreshToken); // login 시 refreshToken 업데이트
     }
 
-    private void saveUsersToDatabase(String email, String accessToken, String refreshToken) {
+    private void saveUsersToDatabase(String email, /*String accessToken,*/String id, String fullName, String refreshToken) {
         System.out.println("new member Email: " + email);
-        System.out.println("new member Access Token: " + accessToken);
+//        System.out.println("new member Access Token: " + accessToken);
+        System.out.println("new member Id: " + id);
+        System.out.println("new member Full name: " + fullName);
         System.out.println("new member Refresh Token: " + refreshToken);
-        userService.saveUser(
-                new Users("someId", "somePwd", "username", "userHandler",
-                        email, accessToken, refreshToken));
+        userService.saveUser(new Users(id, fullName, "userHandler", email, refreshToken));
     }
 
     private boolean isTemporaryEmail(String email) {

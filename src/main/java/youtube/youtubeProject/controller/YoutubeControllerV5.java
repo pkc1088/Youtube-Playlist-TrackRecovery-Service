@@ -94,7 +94,7 @@ public class YoutubeControllerV5 {
         return "getVideos";
     }
 
-    @GetMapping("{playlistId}/initiallyAddVideoDetails") // not done
+    @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
         try {
             List<Video> videos = youtubeService.initiallyAddVideoDetails(playlistId);
@@ -106,7 +106,7 @@ public class YoutubeControllerV5 {
         return "addVideos";
     }
 
-    @PostMapping("/fileTrackAndRecover")
+    @PostMapping("/fileTrackAndRecover") // remove soon
     public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
                                       @RequestParam String playlistIdForRecover, Model model) throws IOException {
         System.err.println("\n==================== Music Track And Recover System Start ====================");
@@ -144,24 +144,20 @@ public class YoutubeControllerV5 {
 
     @PostMapping("/TestAddVideoToPlaylist")
     public String TestAddVideoToPlaylist(@RequestParam String customerEmail, @RequestParam String playlistId, @RequestParam String videoId) {
-
         Users users = userService.getUserByEmail(customerEmail);
-        String accessToken = users.getAccessToken();
-        //String accessToken = userService.getAccessTokenByEmail(customerEmail);
-
-        System.out.println("TestAddVideoToPlaylist - accessToken : " + accessToken);
-        if (accessToken == null) {
-            return "redirect:/error?message=Customer token not found";
-        }
-
-        userService.TestAddVideoToPlaylist(accessToken, playlistId, videoId);
+//        String accessToken = users.getAccessToken();
+        System.out.println("TestAddVideoToPlaylist");
+//        if (accessToken == null) {
+//            return "redirect:/error?message=Customer token not found";
+//        }
+        userService.TestAddVideoToPlaylist(customerEmail, playlistId, videoId); // accesstoken -> customerEmail
 
         return "redirect:/welcome";
     }
 
     @GetMapping("/ScheduledTest")
     public String scheduledTest(Model model) {
-        youtubeService.scheduledTest();
+        //youtubeService.scheduledTest();
         return "redirect:/welcome";
     }
 }
