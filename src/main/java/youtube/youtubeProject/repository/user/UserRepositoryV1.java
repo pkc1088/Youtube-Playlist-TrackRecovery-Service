@@ -3,10 +3,7 @@ package youtube.youtubeProject.repository.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import youtube.youtubeProject.domain.Music;
 import youtube.youtubeProject.domain.Users;
-import youtube.youtubeProject.repository.user.SdjUserRepository;
-import youtube.youtubeProject.repository.user.UserRepository;
 
 import java.util.Optional;
 

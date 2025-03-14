@@ -40,6 +40,40 @@ public class YoutubeControllerV5 {
         return "welcome";
     }
 
+    @GetMapping("{channelId}/playlists") // - just for test
+    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
+        List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
+        model.addAttribute("playlists", playlists);
+        return "playlists";
+    }
+
+//    @GetMapping("{playlistId}/getVideos") // - just for test
+//    public String getVideos(@PathVariable String playlistId, Model model) {
+//        try {
+//            List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
+//            model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
+//        } catch (IOException e) {
+//            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
+//            e.printStackTrace();
+//        }
+//        return "getVideos";
+//    }
+
+    @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
+    public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
+//        try {
+        youtubeService.initiallyAddVideoDetails(playlistId);
+//            List<Video> videos = youtubeService.initiallyAddVideoDetails(playlistId);
+//            model.addAttribute("addVideos", videos); // 비디오 목록만 모델에 담는거임
+//        } catch (IOException e) {
+//            model.addAttribute("error", "Failed to fetch videos from playlist - Addvideos() method.");
+//            e.printStackTrace();
+//        }
+        return "redirect:/welcome";
+//        return "addVideos";
+    }
+
+
     /*
     @GetMapping("/mySignup")
     public String signup() {
@@ -74,38 +108,6 @@ public class YoutubeControllerV5 {
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
     }
     */
-
-    @GetMapping("{channelId}/playlists") // - just for test
-    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
-        List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
-        model.addAttribute("playlists", playlists);
-        return "playlists";
-    }
-
-    @GetMapping("{playlistId}/getVideos") // - just for test
-    public String getVideos(@PathVariable String playlistId, Model model) {
-        try {
-            List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
-            model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
-        } catch (IOException e) {
-            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
-            e.printStackTrace();
-        }
-        return "getVideos";
-    }
-
-    @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
-    public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
-        try {
-            List<Video> videos = youtubeService.initiallyAddVideoDetails(playlistId);
-            model.addAttribute("addVideos", videos); // 비디오 목록만 모델에 담는거임
-        } catch (IOException e) {
-            model.addAttribute("error", "Failed to fetch videos from playlist - Addvideos() method.");
-            e.printStackTrace();
-        }
-        return "addVideos";
-    }
-
 //    @PostMapping("/fileTrackAndRecover") // remove soon - just for test
 //    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
 //                                      @RequestParam String playlistIdForRecover, Model model) throws IOException {

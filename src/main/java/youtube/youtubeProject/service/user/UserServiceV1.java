@@ -26,19 +26,31 @@ import java.util.Collections;
 public class UserServiceV1 implements UserService {
 
     private final UserRepository userRepository;
+
+    public Users getUserByEmail(String email) {
+        Users user = userRepository.findByUserEmail(email);
+        if (user != null) {
+            return user;
+        }
+        throw new RuntimeException("User not found - getUserByEmail");
+    }
+
+    @Override
+    public void saveUser(Users user) {
+        userRepository.saveUser(user);
+    }
+
+    @Override
+    public void updateRefreshTokenByLogin(String email, String refreshToken) {
+        userRepository.updateRefreshTokenByLogin(email, refreshToken);
+    }
+
+
+
 //    @Value("${spring.security.oauth2.client.registration.google.client-id}")
 //    private String clientId;
 //    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
 //    private String clientSecret;
-
-    //@Scheduled(fixedRate = 180000, initialDelayString = "4000000")
-    public void autoAdd() {
-        System.out.println("UserServiceV1 - autoAdd() called");
-//        System.err.println("TestAddVideoTOPlaylist start");
-//        TestAddVideoToPlaylist("pkc1088@gmail.com", "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74", "1qJU8G7gR_g");
-//        System.err.println("TestAddVideoTOPlaylist done");
-    }
-
 //    public void TestAddVideoToPlaylist(String userEmail, String playlistId, String videoId) {
 //
 //        System.err.println("trying to add video via token");
@@ -93,26 +105,6 @@ public class UserServiceV1 implements UserService {
 //            throw new RuntimeException("Failed to refresh access token");
 //        }
 //    }
-
-    public Users getUserByEmail(String email) {
-        Users user = userRepository.findByUserEmail(email);
-        if (user != null) {
-            return user;
-        }
-        throw new RuntimeException("User not found - getUserByEmail");
-    }
-
-    @Override
-    public void saveUser(Users user) {
-        userRepository.saveUser(user);
-    }
-
-    @Override
-    public void updateRefreshTokenByLogin(String email, String refreshToken) {
-        userRepository.updateRefreshTokenByLogin(email, refreshToken);
-    }
-
-
 //    public UserServiceV1(UserRepository userRepository) {
 //        this.userRepository = userRepository; // @RequiredArgsConstructor 로 바꿔보기
 //    }
