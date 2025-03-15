@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface YoutubeService {
 
-    List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException;
+    List<String> getPlaylistsByChannelId(String channelId) throws IOException;
     void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
     void fileTrackAndRecover(String userEmail, String playlistId) throws IOException; // service version 1
     void updatePlaylist(String playlistId) throws IOException; // service version 2

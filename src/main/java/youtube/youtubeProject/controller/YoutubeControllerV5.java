@@ -40,13 +40,6 @@ public class YoutubeControllerV5 {
         return "welcome";
     }
 
-    @GetMapping("{channelId}/playlists") // - just for test
-    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
-        List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
-        model.addAttribute("playlists", playlists);
-        return "playlists";
-    }
-
 
     @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
@@ -61,6 +54,13 @@ public class YoutubeControllerV5 {
         return "redirect:/welcome";
 //        return "addVideos";
     }
+
+    //    @GetMapping("{channelId}/playlists") // - just for test
+//    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
+//        List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
+//        model.addAttribute("playlists", playlists);
+//        return "playlists";
+//    }
 
 
     /*

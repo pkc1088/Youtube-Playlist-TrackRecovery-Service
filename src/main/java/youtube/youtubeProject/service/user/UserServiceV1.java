@@ -35,10 +35,10 @@ public class UserServiceV1 implements UserService {
         userRepository.saveUser(user);
     }
 
-    @Override
-    public void updateRefreshTokenByLogin(String email, String refreshToken) {
-        userRepository.updateRefreshTokenByLogin(email, refreshToken);
-    }
+//    @Override
+//    public void updateRefreshTokenByLogin(String email, String refreshToken) {
+//        userRepository.updateRefreshTokenByLogin(email, refreshToken);
+//    }
 
 
 

@@ -3,7 +3,7 @@ package youtube.youtubeProject.repository.user;
 import org.springframework.data.jpa.repository.JpaRepository;
 import youtube.youtubeProject.domain.Users;
 
-public interface SdjUserRepository extends JpaRepository<Users, Long> {
+public interface SdjUserRepository extends JpaRepository<Users, String> {
 
     Users findByUserEmail(String userEmail);
     Users findByUserId(String userId);

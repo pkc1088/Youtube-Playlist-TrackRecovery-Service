@@ -7,10 +7,8 @@ public interface UserService {
     Users getUserByEmail(String customerEmail);
     Users getUserByUserId(String userId);
     void saveUser(Users user);
-    void updateRefreshTokenByLogin(String email, String refreshToken); // login 시 refreshToken 업데이트
+    //void updateRefreshTokenByLogin(String email, String refreshToken); // login 시 refreshToken 업데이트
 
 
-//    void TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId); // 이거 YoutubeService 로 옮기기
-//    String getAccessTokenByEmail(String email);
-//    Users getUserByAccessToken(String accessToken);
+
 }

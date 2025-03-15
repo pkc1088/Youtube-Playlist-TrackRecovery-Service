@@ -10,10 +10,10 @@ import lombok.Data;
 @Entity
 public class Users {
 
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private String userId;
     private String userName;
     private String userChannelId;

@@ -51,13 +51,15 @@ public class YoutubeServiceV5 implements YoutubeService {
 
     // 수정 필요
     @Override
-    public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
-        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
-        request.setKey(apiKey);
-        request.setChannelId(channelId);
-        request.setMaxResults(50L);
-        PlaylistListResponse response = request.execute();
-        return response.getItems();
+    public List<String> getPlaylistsByChannelId(String channelId) throws IOException {
+//        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
+//        request.setKey(apiKey);
+//        request.setChannelId(channelId);
+//        request.setMaxResults(50L);
+//        PlaylistListResponse response = request.execute();
+
+        // DB 에서 userId로 조회 후 리턴
+        return Collections.singletonList("");
     }
 
     public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
@@ -115,7 +117,7 @@ public class YoutubeServiceV5 implements YoutubeService {
 
     @Override
     public void updatePlaylist(String playlistId) throws IOException { // 나중에 user 기반으로 디비 조회하도록 RDB 설계해야함 email 불필요
-        System.err.println("update playlist ...");
+        System.err.println("update playlist start ...");
 
         // 1. 고객 플레이리스트 담긴 디비 불러오기
         List<Music> musicDBList = youtubeRepository.findAllMusicByPlaylistId(playlistId);
@@ -153,7 +155,7 @@ public class YoutubeServiceV5 implements YoutubeService {
         // 5-1. 플레이리스트 자체가 없을 수가 있다. (고객이 제거해서 -> 2번에서 catch 로 잡아야 할 듯)
         // 5-2. 플레이리스트 이름이 변경 됐을 수 있다.
         // 5-3. 고려하지 않아도 될 사항 : 플리 자체가 추가 됐다면 그건 고객이 다시 등록을 해야한다.
-        System.err.println("update playlist done");
+        System.err.println("update playlist done ...");
     }
 
 

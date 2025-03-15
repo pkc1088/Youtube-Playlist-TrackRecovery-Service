@@ -33,8 +33,7 @@ import java.util.StringTokenizer;
 
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    @Value("${youtube.api.key}")
-    private String apiKey;
+
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService; // 추가
 
@@ -98,7 +97,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         System.out.println("new member Refresh Token: " + refreshToken);
         userService.saveUser(new Users(id, fullName, channelId, email, refreshToken));
     }
-
 
     public String getChannelIdByUserId(String accessToken) throws IOException, GeneralSecurityException {
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);

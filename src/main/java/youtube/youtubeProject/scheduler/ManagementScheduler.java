@@ -14,7 +14,7 @@ public class ManagementScheduler {
     private final YoutubeService youtubeService;
     private final UserService userService;
 
-//    @Scheduled(fixedRate = 30000, initialDelayString = "5000")
+//    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
     public void updateTest() throws IOException {
         System.err.println("auto scheduler activated");
         String playlistId = "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74";
@@ -25,7 +25,6 @@ public class ManagementScheduler {
 //    @Scheduled(fixedRate = 60000, initialDelayString = "3000")
     public void autoScheduleGeneralCustomer() throws IOException {
         System.err.println("auto scheduler activated");
-        //Users user = userService.getUserByEmail("pkc1088@gmail.com");
         Users user = userService.getUserByUserId("112735690496635663877");
         String playlistId = "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74";
         youtubeService.fileTrackAndRecover(user.getUserId(), playlistId);
