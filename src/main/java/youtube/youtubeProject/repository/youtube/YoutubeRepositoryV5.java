@@ -1,13 +1,9 @@
 package youtube.youtubeProject.repository.youtube;
 
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.Video;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import youtube.youtubeProject.domain.Music;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 

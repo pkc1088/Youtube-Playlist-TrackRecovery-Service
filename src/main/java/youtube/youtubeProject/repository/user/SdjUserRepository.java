@@ -4,7 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import youtube.youtubeProject.domain.Users;
 
 public interface SdjUserRepository extends JpaRepository<Users, Long> {
+
     Users findByUserEmail(String userEmail);
+    Users findByUserId(String userId);
 
 //    Optional<User> findByUserId(String userId);
 //?    Users findByAccessToken(String accessToken);

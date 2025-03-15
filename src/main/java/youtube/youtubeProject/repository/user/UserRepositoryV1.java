@@ -14,8 +14,14 @@ public class UserRepositoryV1 implements UserRepository {
 
     private final SdjUserRepository repository;
 
+    @Override
     public Users findByUserEmail(String email) {
         return repository.findByUserEmail(email);
+    }
+
+    @Override
+    public Users findByUserId(String userId) {
+        return repository.findByUserId(userId);
     }
 
     public void saveUser(Users user) {

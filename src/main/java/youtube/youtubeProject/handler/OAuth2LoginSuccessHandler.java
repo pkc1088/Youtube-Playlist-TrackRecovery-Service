@@ -1,10 +1,17 @@
 package youtube.youtubeProject.handler;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -15,15 +22,19 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.client.RestTemplate;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.service.user.UserService;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.StringTokenizer;
 
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
+    @Value("${youtube.api.key}")
+    private String apiKey;
     private final UserService userService;
     private final OAuth2AuthorizedClientService authorizedClientService; // 추가
 
@@ -42,66 +53,66 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     oauthToken.getName()
             );
 
-            //String accessToken = authorizedClient.getAccessToken().getTokenValue();
-            String refreshToken = authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken().getTokenValue() : null;
-            String email = ((OidcUser) oauthToken.getPrincipal()).getEmail();
-            String id = oauthToken.getPrincipal().getName();
-            String fullName = ((OidcUser) oauthToken.getPrincipal()).getFullName();
+            String accessToken = authorizedClient.getAccessToken().getTokenValue();
+            String userId = oauthToken.getPrincipal().getName();    // 112735690496635663877, 107155055893692546350
 
-            if (isTemporaryEmail(email)) {// 임시 이메일 주소인지 확인
-                System.err.println("TemporaryEmail");
-                email = getRealEmail(email, oauthToken);// 실제 이메일 주소 요청 (추가 로직 필요)
-            }
+            if(alreadyMember(userId)) {
+                System.out.println("you are already a member of this service");
+                //updateRefreshTokenByLogin(email, refreshToken);// registered member
+            } else {
+                String fullName = ((OidcUser) oauthToken.getPrincipal()).getFullName(); // pkc1088, whistle_missile 등
+                String channelId;
+                try {
+                    channelId = getChannelIdByUserId(accessToken);
+                } catch (GeneralSecurityException e) { throw new RuntimeException(e); }
+                String email = ((OidcUser) oauthToken.getPrincipal()).getEmail();
+                if (isTemporaryEmail(email)) {
+                    System.err.println("Temporary Email");
+                    email = getRealEmail(email, oauthToken);
+                }
+                String refreshToken = authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken().getTokenValue() : null;
 
-            if(true) {
-                //System.out.println("got ace : " + accessToken);
-                System.out.println("got ref : " + refreshToken); // ~19AyboNhX0o
-                System.out.println("got email : " + oauthToken.getPrincipal().getAttribute("email"));
-                System.out.println("got name : " + fullName); // 112735690496635663877
-                System.out.println("got ID : " + id); // google
-//                System.out.println("getFullName : " + ((OidcUser) oauthToken.getPrincipal()).getFullName());
-//                System.out.println("getProfile : " + ((OidcUser) oauthToken.getPrincipal()).getProfile());
-//                System.out.println("getIdToken : " + ((OidcUser) oauthToken.getPrincipal()).getIdToken());
-            } // 정보 출력
-
-            /* email 중복 되는지 반드시 체크 */
-            if(alreadyMember(email)) { // registered member
-                //updateRefreshTokenByLogin(email, accessToken, refreshToken);
-                updateRefreshTokenByLogin(email, refreshToken);
-            } else { // new member
-                //saveUsersToDatabase(email, accessToken, refreshToken);
-                saveUsersToDatabase(email, id, fullName, refreshToken);
+                saveUsersToDatabase(userId, fullName, channelId, email, refreshToken); // new member
             }
         }
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
-    private boolean alreadyMember(String email) {
+    private boolean alreadyMember(String userId) {
         try{
-            if(email.equals(userService.getUserByEmail(email).getUserEmail())) {
+            if(userId.equals(userService.getUserByUserId(userId).getUserId())) {
                 System.err.println("Registered Member");
                 return true;
             }
         } catch (RuntimeException e) {
-            System.err.println("New member");
+            System.err.println("New Member");
         }
         return false;
     }
 
-    private void updateRefreshTokenByLogin(String email, /*String accessToken, */String refreshToken) {
-        System.out.println("old member Email: " + email);
-//        System.out.println("old member Access Token: " + accessToken);
-        System.out.println("old member Refresh Token: " + refreshToken);
-        userService.updateRefreshTokenByLogin(email, refreshToken); // login 시 refreshToken 업데이트
+    private void saveUsersToDatabase(String id,  String fullName, String channelId, String email, String refreshToken) {
+        System.out.println("new member Id: " + id);
+        System.out.println("new member Name: " + fullName);
+        System.out.println("new member ChannelId: " + channelId);
+        System.out.println("new member Email: " + email);
+        System.out.println("new member Refresh Token: " + refreshToken);
+        userService.saveUser(new Users(id, fullName, channelId, email, refreshToken));
     }
 
-    private void saveUsersToDatabase(String email, /*String accessToken,*/String id, String fullName, String refreshToken) {
-        System.out.println("new member Email: " + email);
-//        System.out.println("new member Access Token: " + accessToken);
-        System.out.println("new member Id: " + id);
-        System.out.println("new member Full name: " + fullName);
-        System.out.println("new member Refresh Token: " + refreshToken);
-        userService.saveUser(new Users(id, fullName, "userHandler", email, refreshToken));
+
+    public String getChannelIdByUserId(String accessToken) throws IOException, GeneralSecurityException {
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+        YouTube youtube = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                .setApplicationName("youtube-channel-info").build();
+
+        ChannelListResponse response = youtube.channels().list(Collections.singletonList("snippet"))
+                                        .setMine(true).execute();   // 현재 인증된 사용자의 채널 정보 조회
+        if (response.getItems().isEmpty()) {
+            throw new RuntimeException("No channel found for the authenticated user.");
+        }
+        Channel channel = response.getItems().get(0);
+        return channel.getId();
     }
 
     private boolean isTemporaryEmail(String email) {
@@ -114,7 +125,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         //return oauthToken.getPrincipal().getAttribute("email");
     }
 
-
+//    private void updateRefreshTokenByLogin(String email, String refreshToken) { // 이거 안 씀, 이렇게 하면 안됨
+//        System.out.println("old member Email: " + email);
+//        System.out.println("old member Refresh Token: " + refreshToken);
+//        userService.updateRefreshTokenByLogin(email, refreshToken); // login 시 refreshToken 업데이트
+//    }
 }
 
     /*@Bean

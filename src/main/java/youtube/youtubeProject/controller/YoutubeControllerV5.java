@@ -47,17 +47,6 @@ public class YoutubeControllerV5 {
         return "playlists";
     }
 
-//    @GetMapping("{playlistId}/getVideos") // - just for test
-//    public String getVideos(@PathVariable String playlistId, Model model) {
-//        try {
-//            List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
-//            model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
-//        } catch (IOException e) {
-//            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
-//            e.printStackTrace();
-//        }
-//        return "getVideos";
-//    }
 
     @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
@@ -108,6 +97,19 @@ public class YoutubeControllerV5 {
         return "redirect:/welcome"; // 이건 나중에 initallyAddVideo(GetMapping) 페이지로 이동시켜서 플리 등록하게 해야함
     }
     */
+
+//    @GetMapping("{playlistId}/getVideos") // - just for test
+//    public String getVideos(@PathVariable String playlistId, Model model) {
+//        try {
+//            List<String> videos = youtubeService.getVideosFromPlaylist(playlistId);
+//            model.addAttribute("getVideos", videos); // 비디오 목록만 모델에 담는거임
+//        } catch (IOException e) {
+//            model.addAttribute("error", "Failed to fetch videos from playlist - getvideos() method.");
+//            e.printStackTrace();
+//        }
+//        return "getVideos";
+//    }
+
 //    @PostMapping("/fileTrackAndRecover") // remove soon - just for test
 //    public String fileTrackAndRecover(@RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
 //                                      @RequestParam String playlistIdForRecover, Model model) throws IOException {

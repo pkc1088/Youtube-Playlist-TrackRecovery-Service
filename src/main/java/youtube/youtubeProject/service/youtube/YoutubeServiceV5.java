@@ -4,13 +4,19 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import youtube.youtubeProject.domain.Music;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.repository.user.UserRepository;
@@ -42,7 +48,9 @@ public class YoutubeServiceV5 implements YoutubeService {
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
+
     // 수정 필요
+    @Override
     public List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException {
         YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
         request.setKey(apiKey);
@@ -95,6 +103,7 @@ public class YoutubeServiceV5 implements YoutubeService {
         }
     }
 
+    @Override
     public void initiallyAddVideoDetails(String playlistId) throws IOException {
         PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
 
@@ -104,9 +113,8 @@ public class YoutubeServiceV5 implements YoutubeService {
         }
     }
 
-
     @Override
-    public void updatePlaylist(String userEmail, String playlistId) throws IOException { // 나중에 user 기반으로 디비 조회하도록 RDB 설계해야함
+    public void updatePlaylist(String playlistId) throws IOException { // 나중에 user 기반으로 디비 조회하도록 RDB 설계해야함 email 불필요
         System.err.println("update playlist ...");
 
         // 1. 고객 플레이리스트 담긴 디비 불러오기
@@ -148,28 +156,30 @@ public class YoutubeServiceV5 implements YoutubeService {
         System.err.println("update playlist done");
     }
 
-    public void fileTrackAndRecover(String userEmail, String playlistId) throws IOException {
+
+    @Override
+    public void fileTrackAndRecover(String userId, String playlistId) throws IOException {
 
         // 1. 사용자의 업데이트된 목록 최신화 로직
-        updatePlaylist(userEmail, playlistId);
+        updatePlaylist(playlistId);
 
         // 2. 비정상적인 파일 추적
-        Map<String, Long> videos = getIllegalVideosFromPlaylist(playlistId); // videoId, Position 뽑기
-        if(videos.isEmpty()) {
+        Map<String, Long> illegalVideos = getIllegalPlaylistItemList(playlistId); // videoId, Position 뽑기
+        if(illegalVideos.isEmpty()) {
             System.err.println("There's no music to recover");
             return;
         }
 
         // 3. 토큰 획득 1일 1회 (accessToken <- refreshToken)
         System.err.println("once a day : accessToken <- refreshToken");
-        Users user = userRepository.findByUserEmail(userEmail);
+        Users user = userRepository.findByUserId(userId);
         String refreshToken = user.getRefreshToken();
         String accessToken = refreshAccessToken(refreshToken);
 
         // 4. 복구 시스템 가동
-        for (String videoIdToDelete : videos.keySet()) {
+        for (String videoIdToDelete : illegalVideos.keySet()) {
             // illegal video 가 여러개일 수 있으니
-            long videoPosition = videos.get(videoIdToDelete);
+            long videoPosition = illegalVideos.get(videoIdToDelete);
             System.err.println("Tracked Illegal Music (" + videoIdToDelete + ") at index " + videoPosition);
 
             // 4-1. DB 에서 videoId로 검색해서 백업된 Music 객체를 가져옴
@@ -179,7 +189,7 @@ public class YoutubeServiceV5 implements YoutubeService {
             // 4-2. 그 Music 으로 유튜브에 검색을 함 search 해서 return 받음
             if(backupMusic == null) {
                 // 4-2-1. backupMusic 이 null 이면 백업 안된 영상. 즉 사용자가 최근에 추가했지만 빠르게 삭제된 영상
-                TestDeleteFromPlaylist(accessToken, playlistId, videoIdToDelete);
+                deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
                 // updatePlaylist 행위때 그런 음악은 디비에 저장 안했으니 디비 수정할 이유는 없다
                 continue;
             }
@@ -190,12 +200,59 @@ public class YoutubeServiceV5 implements YoutubeService {
             youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
 
             // 4-4. 실제 유튜브 플레이리스트에도 add 와 delete
-            TestAddVideoToPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
-            TestDeleteFromPlaylist(accessToken, playlistId, videoIdToDelete);
+            addVideoToActualPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
+            deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
         }
     }
+    //    @Override
+//    public void fileTrackAndRecover(String userEmail, String playlistId) throws IOException {
+//
+//        // 1. 사용자의 업데이트된 목록 최신화 로직
+//        updatePlaylist(userEmail, playlistId);
+//
+//        // 2. 비정상적인 파일 추적
+//        Map<String, Long> illegalVideos = getIllegalPlaylistItemList(playlistId); // videoId, Position 뽑기
+//        if(illegalVideos.isEmpty()) {
+//            System.err.println("There's no music to recover");
+//            return;
+//        }
+//
+//        // 3. 토큰 획득 1일 1회 (accessToken <- refreshToken)
+//        System.err.println("once a day : accessToken <- refreshToken");
+//        Users user = userRepository.findByUserEmail(userEmail);
+//        String refreshToken = user.getRefreshToken();
+//        String accessToken = refreshAccessToken(refreshToken);
+//
+//        // 4. 복구 시스템 가동
+//        for (String videoIdToDelete : illegalVideos.keySet()) {
+//            // illegal video 가 여러개일 수 있으니
+//            long videoPosition = illegalVideos.get(videoIdToDelete);
+//            System.err.println("Tracked Illegal Music (" + videoIdToDelete + ") at index " + videoPosition);
+//
+//            // 4-1. DB 에서 videoId로 검색해서 백업된 Music 객체를 가져옴
+//            Optional<Music> optionalBackUpMusic = youtubeRepository.getMusicFromDBThruMusicId(videoIdToDelete);
+//            Music backupMusic = optionalBackUpMusic.orElse(null);
+//
+//            // 4-2. 그 Music 으로 유튜브에 검색을 함 search 해서 return 받음
+//            if(backupMusic == null) {
+//                // 4-2-1. backupMusic 이 null 이면 백업 안된 영상. 즉 사용자가 최근에 추가했지만 빠르게 삭제된 영상
+//                deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
+//                // updatePlaylist 행위때 그런 음악은 디비에 저장 안했으니 디비 수정할 이유는 없다
+//                continue;
+//            }
+//            // 4-2-2. backupMusic 이 null 이 아니면 백업된 영상임 (search 알고리즘 강화 필요)
+//            Music videoForRecovery = searchVideoToReplace(backupMusic, playlistId);
+//
+//            // 4-3. DB를 업데이트한다 CRUD 동작은 service 가 아니라 repository 가 맡아서 한다.
+//            youtubeRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
+//
+//            // 4-4. 실제 유튜브 플레이리스트에도 add 와 delete
+//            addVideoToActualPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
+//            deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
+//        }
+//    }
 
-    public Map<String, Long> getIllegalVideosFromPlaylist(String playlistId) throws IOException {
+    public Map<String, Long> getIllegalPlaylistItemList(String playlistId) throws IOException {
 
         PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
         Map<String, Long> videos = new HashMap<>();
@@ -239,9 +296,8 @@ public class YoutubeServiceV5 implements YoutubeService {
         return new Music(videoId, videoTitle, videoUploader, "someDescription",
                     "someTags", playlistId, 5, "someone's Id");
     }
-
     // insert 할 떄 요구되는 속성 다시 점검
-    public void TestAddVideoToPlaylist(String accessToken, String playlistId, String videoId, long videoPosition) {
+    public void addVideoToActualPlaylist(String accessToken, String playlistId, String videoId, long videoPosition) {
         try {
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
             YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
@@ -268,9 +324,8 @@ public class YoutubeServiceV5 implements YoutubeService {
             throw new RuntimeException(e);
         }
     }
-
     // 불필요한 동작 수정 필요
-    public void TestDeleteFromPlaylist(String accessToken, String playlistId, String videoId) {
+    public void deleteFromActualPlaylist(String accessToken, String playlistId, String videoId) {
         try {
             GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
             YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
@@ -299,7 +354,6 @@ public class YoutubeServiceV5 implements YoutubeService {
             e.printStackTrace();
         }
     }
-
 
     public String refreshAccessToken(String refreshToken) { // 사실 이게 핵심인듯?
         try {
@@ -341,9 +395,20 @@ public class YoutubeServiceV5 implements YoutubeService {
     //                System.out.println("cant proceed addUpdate");
     //                // 해당 영상 (최근에 추가했으나 비공개된)을 실제 플레이리스트에서 삭제하는 로직
     //            }
+        Music musicToSearch = null;
+            if (optionalMusicToSearch.isPresent()) musicToSearch = optionalMusicToSearch.get();
 
+        Video video;
+        if (response.getItems().isEmpty()) {
+            throw new RuntimeException("Deleted/Private Video When Initially Adding - REX : " + videoId);
+        } else {
+            video = response.getItems().get(0);
+        }
+        if(video.getStatus().getPrivacyStatus().equals("unlisted")) {
+            throw new RuntimeException("Privacy Status Unlisted Video When Initially Adding - REX : "
+                    + video.getSnippet().getTitle() + ", " +videoId);
+        }
      */
-
 
     // delete soon
 //    public List<String> getVideosFromPlaylist(String playlistId) throws IOException { // 내부에서 호출해야함
@@ -371,21 +436,6 @@ public class YoutubeServiceV5 implements YoutubeService {
 //        return videos;
 //    }
 
-/*
-//            Music musicToSearch = null;
-//            if (optionalMusicToSearch.isPresent()) musicToSearch = optionalMusicToSearch.get();
-
-        Video video;
-        if (response.getItems().isEmpty()) {
-            throw new RuntimeException("Deleted/Private Video When Initially Adding - REX : " + videoId);
-        } else {
-            video = response.getItems().get(0);
-        }
-        if(video.getStatus().getPrivacyStatus().equals("unlisted")) {
-            throw new RuntimeException("Privacy Status Unlisted Video When Initially Adding - REX : "
-                    + video.getSnippet().getTitle() + ", " +videoId);
-        }
-*/
 //    public String searchVideo(String query) throws IOException {
 //        YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
 //        search.setKey(apiKey);

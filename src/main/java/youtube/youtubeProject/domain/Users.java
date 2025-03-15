@@ -15,25 +15,19 @@ public class Users {
     private Long id;
 
     private String userId;
-    //private String userPassword;
     private String userName;
-    private String userHandler;
+    private String userChannelId;
     private String userEmail;
-    //private String accessToken;
     private String refreshToken;
 
     public Users() {
     }
 
-    public Users(String userId/*, String userPassword*/, String userName, String userHandler,
-                 String userEmail/*, String accessToken*/, String refreshToken) {
+    public Users(String userId, String userName, String userChannelId, String userEmail, String refreshToken) {
         this.userId = userId;
-        //this.userPassword = userPassword;
         this.userName = userName;
-        this.userHandler = userHandler;
+        this.userChannelId = userChannelId;
         this.userEmail = userEmail;
-        //this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
-    // 생성자, Getter, Setter
 }

@@ -1,25 +1,10 @@
 package youtube.youtubeProject.service.user;
 
-import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemSnippet;
-import com.google.api.services.youtube.model.ResourceId;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.repository.user.UserRepository;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +12,22 @@ public class UserServiceV1 implements UserService {
 
     private final UserRepository userRepository;
 
+    @Override
     public Users getUserByEmail(String email) {
         Users user = userRepository.findByUserEmail(email);
         if (user != null) {
             return user;
         }
         throw new RuntimeException("User not found - getUserByEmail");
+    }
+
+    @Override
+    public Users getUserByUserId(String userId) {
+        Users user = userRepository.findByUserId(userId);
+        if (user != null) {
+            return user;
+        }
+        throw new RuntimeException("User not found - getUserByUserId");
     }
 
     @Override

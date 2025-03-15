@@ -8,17 +8,9 @@ import java.util.List;
 public interface YoutubeService {
 
     List<Playlist> getPlaylistsByChannelId(String channelId) throws IOException;
-
     void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
     void fileTrackAndRecover(String userEmail, String playlistId) throws IOException; // service version 1
-
-    void updatePlaylist(String userEmail, String playlistId) throws IOException; // service version 2
-    /*
-    updatePlaylist 서비스는 알림 서비스만 제공한다.
-    사용자가 추가했지만 바로 삭제되는 영상의 경우 사용자가 제거해야한다.
-     */
-
-
+    void updatePlaylist(String playlistId) throws IOException; // service version 2
 
 
 //    Video getVideoDetails(String videoId) throws IOException; 여기에 선언할 이유는 없다?
