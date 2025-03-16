@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.service.user.UserService;
@@ -89,7 +90,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         return false;
     }
 
-    private void saveUsersToDatabase(String id,  String fullName, String channelId, String email, String refreshToken) {
+    public void saveUsersToDatabase(String id, String fullName, String channelId, String email, String refreshToken) {
         System.out.println("new member Id: " + id);
         System.out.println("new member Name: " + fullName);
         System.out.println("new member ChannelId: " + channelId);

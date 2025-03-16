@@ -17,10 +17,10 @@ public class Music {
     private String videoDescription;
     private String videoTags; //    @ElementCollection private List<String> videoTags;
 
-    private String videoPlaylistId;
+    private String videoPlaylistId; // FK 선언하기
     private int videoPlaylistPosition;
 
-    private String userId;
+    private String userId; // 얘는 없어도 될 듯? 어차피 음악(여러명이 공유함)은 결국 FK인 플레이리스트에 의존적임
 
     public Music() {
     }

@@ -43,7 +43,7 @@ public class YoutubeServiceV5 implements YoutubeService {
     private final UserRepository userRepository;
 
     public YoutubeServiceV5(YoutubeRepository youtubeRepository, UserRepository userRepository) {
-        this.youtubeRepository = youtubeRepository;// YouTube 객체를 빌드하여 API에 접근할 수 있는 YouTube 클라이언트 생성
+        this.youtubeRepository = youtubeRepository;
         this.userRepository = userRepository;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
@@ -52,13 +52,9 @@ public class YoutubeServiceV5 implements YoutubeService {
     // 수정 필요
     @Override
     public List<String> getPlaylistsByChannelId(String channelId) throws IOException {
-//        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
-//        request.setKey(apiKey);
-//        request.setChannelId(channelId);
-//        request.setMaxResults(50L);
-//        PlaylistListResponse response = request.execute();
 
         // DB 에서 userId로 조회 후 리턴
+
         return Collections.singletonList("");
     }
 
@@ -162,6 +158,8 @@ public class YoutubeServiceV5 implements YoutubeService {
     @Override
     public void fileTrackAndRecover(String userId, String playlistId) throws IOException {
 
+        // 0. userId로 먼저 조회 후 거기에 딸린 많은 playlistId 추출해서 반복문 돌릴 수 있음
+
         // 1. 사용자의 업데이트된 목록 최신화 로직
         updatePlaylist(playlistId);
 
@@ -206,7 +204,8 @@ public class YoutubeServiceV5 implements YoutubeService {
             deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
         }
     }
-    //    @Override
+
+//    @Override
 //    public void fileTrackAndRecover(String userEmail, String playlistId) throws IOException {
 //
 //        // 1. 사용자의 업데이트된 목록 최신화 로직
@@ -298,6 +297,7 @@ public class YoutubeServiceV5 implements YoutubeService {
         return new Music(videoId, videoTitle, videoUploader, "someDescription",
                     "someTags", playlistId, 5, "someone's Id");
     }
+
     // insert 할 떄 요구되는 속성 다시 점검
     public void addVideoToActualPlaylist(String accessToken, String playlistId, String videoId, long videoPosition) {
         try {
@@ -326,6 +326,7 @@ public class YoutubeServiceV5 implements YoutubeService {
             throw new RuntimeException(e);
         }
     }
+
     // 불필요한 동작 수정 필요
     public void deleteFromActualPlaylist(String accessToken, String playlistId, String videoId) {
         try {

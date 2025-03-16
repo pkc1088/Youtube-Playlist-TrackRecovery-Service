@@ -43,19 +43,11 @@ public class YoutubeControllerV5 {
 
     @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
     public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
-//        try {
         youtubeService.initiallyAddVideoDetails(playlistId);
-//            List<Video> videos = youtubeService.initiallyAddVideoDetails(playlistId);
-//            model.addAttribute("addVideos", videos); // 비디오 목록만 모델에 담는거임
-//        } catch (IOException e) {
-//            model.addAttribute("error", "Failed to fetch videos from playlist - Addvideos() method.");
-//            e.printStackTrace();
-//        }
         return "redirect:/welcome";
-//        return "addVideos";
     }
 
-    //    @GetMapping("{channelId}/playlists") // - just for test
+//    @GetMapping("{channelId}/playlists") // - just for test
 //    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {
 //        List<Playlist> playlists = youtubeService.getPlaylistsByChannelId(channelId);
 //        model.addAttribute("playlists", playlists);
