@@ -21,7 +21,7 @@ import youtube.youtubeProject.config.SpringDataJpaConfig;
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = "youtube.youtubeProject") //.controller
 public class YoutubeProjectApplication {
-
+// connect test
 	public static void main(String[] args) {
 		SpringApplication.run(YoutubeProjectApplication.class, args);
 	}

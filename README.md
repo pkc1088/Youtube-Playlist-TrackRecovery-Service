@@ -63,7 +63,18 @@ Youtube 음원 파일의 비정상적인 삭제에 대한 추적 및 복구 서�
     ├── not for display
     └── not for display
 ```
-# 5. 프로젝트 주요 기능
-
+# 3. 프로젝트 주요 기능
+# 4. 트러블 슛팅
+- OAuth2 권한 획득 및 이용
+  - @RegisteredOAuth2AuthorizedClient과 access & refresh token 차이
+  - access_type과 prompt
+  - 구글 고유 ID로 회원 구분
+  - 브라우저 캐싱 삭제와 OAuth2 재인증
+- 유튜브 비정상 영상의 properties 정의
+  - 삭제 및 비공개 영상과 'unavailable video'의 차이
+- SecurityConfig와 loginSuccessHandler() 위치
+- scheduler, controller, service(youtube & user), repository, domain 의존성
+# 5. 기술 및 API 분석
+- Youtube Data API V3 할당량 정책
 # 6. 프로젝트 결론 및 리뷰
 
