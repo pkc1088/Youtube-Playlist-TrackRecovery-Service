@@ -18,12 +18,13 @@ public class Playlist {
     private String serviceType;
 
 
-    @ManyToOne
-    @JoinColumn
-    private Users user;
-
-    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Music> playlistItems; // 해당 플레이리스트의 음악 항목들
+//    @ManyToOne
+//    @JoinColumn
+//    private Users user;
+//
+//    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Music> playlistItems;
+    // 해당 플레이리스트의 음악 항목들
     // 방향성과 pk/fk는 별개다 gpt 참고
 
     public Playlist() {}
@@ -32,6 +33,6 @@ public class Playlist {
         this.playlistId = playlistId;
         this.playlistTitle = playlistTitle;
         this.serviceType = serviceType;
-        this.user = user;
+//        this.user = user;
     }
 }

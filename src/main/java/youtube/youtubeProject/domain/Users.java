@@ -19,8 +19,8 @@ public class Users {
     // private boolean serviceAvailable;
 
     // added
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Playlist> playlists; // 한 사용자는 여러 개의 플레이리스트를 가질 수 있음
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Playlist> playlists; // 한 사용자는 여러 개의 플레이리스트를 가질 수 있음
 
 
     public Users() {}
