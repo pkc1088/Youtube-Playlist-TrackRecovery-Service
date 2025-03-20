@@ -18,7 +18,9 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import youtube.youtubeProject.domain.Music;
+import youtube.youtubeProject.domain.Playlist;
 import youtube.youtubeProject.domain.Users;
+import youtube.youtubeProject.repository.playlist.PlaylistRepository;
 import youtube.youtubeProject.repository.user.UserRepository;
 import youtube.youtubeProject.repository.youtube.YoutubeRepository;
 
@@ -41,21 +43,22 @@ public class YoutubeServiceV5 implements YoutubeService {
     private static YouTube youtube;
     private final YoutubeRepository youtubeRepository;
     private final UserRepository userRepository;
+    private final PlaylistRepository playlistRepository;
 
-    public YoutubeServiceV5(YoutubeRepository youtubeRepository, UserRepository userRepository) {
+    public YoutubeServiceV5(YoutubeRepository youtubeRepository, UserRepository userRepository, PlaylistRepository playlistRepository) {
         this.youtubeRepository = youtubeRepository;
         this.userRepository = userRepository;
+        this.playlistRepository = playlistRepository;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
 
-    // 수정 필요
+    // uuid 아니고 channelId 가 맞나? 유튜브는 채널 아이디로 호출되니까?
     @Override
-    public List<String> getPlaylistsByChannelId(String channelId) throws IOException {
-
+    public Set<Playlist> getPlaylistsByUserId(String userId){
         // DB 에서 userId로 조회 후 리턴
-
-        return Collections.singletonList("");
+        Users user = userRepository.findByUserId(userId);
+        return user.getPlaylists();
     }
 
     public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
@@ -91,13 +94,42 @@ public class YoutubeServiceV5 implements YoutubeService {
             //List<String> tags = video.getSnippet().getTags();
             //String videoPrivacyStatus = item.getStatus().getPrivacyStatus();
 
-            Music newMusic = new Music(videoId, videoTitle, videoUploader, "someDescription",
-                    "someTags", playlistId, 5, "someone'sId");
+            /*
+            Playlist playlist = findByPlaylistId()
+            작성 필요
+            */
+//            Music music = new Music(); music.setVideoId(videoId); <-- 이런식으로 수정하자
+            Music newMusic =  new Music(videoId, videoTitle, videoUploader, "someDescription",
+                    "someTags", 5, new Playlist());
 
             youtubeRepository.addUpdatePlaylist(playlistId, newMusic);
 
         } catch (RuntimeException e) {
             System.err.println("Inaccessible Video Adding -> Aborted From DBAddAction");
+        }
+    }
+
+    public void registerPlaylists(String userId) throws IOException {
+        // 1. userId 로 oauth2 인증 거쳐 DB 에 저장됐을 channelId 얻기
+        Users user = userRepository.findByUserId(userId);
+        String channelId = user.getUserChannelId();
+        // 2. channelId로 api 호출 통해 playlist 다 받아오기
+        YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, id, contentDetails"));
+        request.setKey(apiKey);
+        request.setChannelId(channelId);
+        request.setMaxResults(50L);
+        PlaylistListResponse response = request.execute();
+
+        // 3. playlist 도메인에 저장하기
+        for (com.google.api.services.youtube.model.Playlist youtubePlaylist : response.getItems()) {
+            // 3.1 필요한 데이터만 추출해서 내 Playlist 엔티티에 매핑
+            Playlist playlist = new Playlist();
+            playlist.setPlaylistId(youtubePlaylist.getId());
+            playlist.setPlaylistTitle(youtubePlaylist.getSnippet().getTitle());
+            playlist.setServiceType("track&recover");
+            playlist.setUser(user);
+            // 3.2 Playlist 객체를 DB에 저장
+            playlistRepository.save(playlist);
         }
     }
 
@@ -294,8 +326,12 @@ public class YoutubeServiceV5 implements YoutubeService {
         // String videoDescription = searchResult.getSnippet().getDescription();
         // String videoTags = not available here
 
+        /*
+        Playlist playlist = findByPlaylistId()
+        작성 필요
+        */
         return new Music(videoId, videoTitle, videoUploader, "someDescription",
-                    "someTags", playlistId, 5, "someone's Id");
+                    "someTags", 5, new Playlist());
     }
 
     // insert 할 떄 요구되는 속성 다시 점검

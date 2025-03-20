@@ -2,9 +2,15 @@ package youtube.youtubeProject.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+import java.util.Set;
+
 @Entity
+@Getter @Setter
+@NoArgsConstructor
 public class Music {
 
     @Id
@@ -16,33 +22,27 @@ public class Music {
     private String videoUploader;
     private String videoDescription;
     private String videoTags; //    @ElementCollection private List<String> videoTags;
-
-    private String videoPlaylistId; // FK 선언하기
     private int videoPlaylistPosition;
 
-    private String userId; // 얘는 없어도 될 듯? 어차피 음악(여러명이 공유함)은 결국 FK인 플레이리스트에 의존적임
+    @ManyToOne
+    @JoinColumn(name = "playlistId", nullable = false) // FK 선언하기
+    private Playlist playlist;
 
-    public Music() {
-    }
 
-    public Music(String videoId, String videoTitle, String videoPlaylistId) {
+    public Music(String videoId, String videoTitle, String playlist) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
-        this.videoPlaylistId = videoPlaylistId;
+//        this.playlist = playlist;
     }
 
     public Music(String videoId, String videoTitle, String videoUploader, String videoDescription, String videoTags,
-                 String videoPlaylistId, int videoPlaylistPosition,
-                 String userId) {
+                 int videoPlaylistPosition, Playlist playlist) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
         this.videoUploader = videoUploader;
         this.videoDescription = videoDescription;
         this.videoTags = videoTags;
-
-        this.videoPlaylistId = videoPlaylistId;
         this.videoPlaylistPosition = videoPlaylistPosition;
-
-        this.userId = userId;
+        this.playlist = playlist;
     }
 }
