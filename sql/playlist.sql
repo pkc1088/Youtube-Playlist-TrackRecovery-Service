@@ -1,5 +1,5 @@
-drop table if exists Playlist CASCADE;
-CREATE TABLE playlist (
+drop table if exists Playlists CASCADE;
+CREATE TABLE playlists (
     playlist_id VARCHAR(50) PRIMARY KEY,
     playlist_title VARCHAR(255),
     service_type VARCHAR(30),

@@ -3,7 +3,6 @@ package youtube.youtubeProject.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
 import java.util.Set;
 
 //@AllArgsConstructor
@@ -20,7 +19,7 @@ public class Users {
     private String refreshToken;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Playlist> playlists;
+    private Set<Playlists> playlists;
     // private boolean serviceAvailable;
 
     public Users(String userId, String userName, String userChannelId, String userEmail, String refreshToken) {

@@ -1,6 +1,7 @@
 package youtube.youtubeProject.repository.youtube;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import youtube.youtubeProject.domain.Music;
 
 import java.util.List;
@@ -8,7 +9,12 @@ import java.util.Optional;
 
 public interface SdjYoutubeRepository extends JpaRepository<Music, Long> {
 
-    List<Music> findByVideoPlaylistIdLike(String playlistId);
+    List<Music> findByPlaylist_PlaylistId(String playlistId);
+//    @Query(value = "SELECT * FROM Music WHERE playlist = :playlistId", nativeQuery = true)
+//    List<Music> findByPlaylistId(String playlistId);
+
+//    List<Music> findByVideoPlaylistIdLike(String playlistId); // 원본
+
 
     Optional<Music> findByVideoId(String videoId);
 

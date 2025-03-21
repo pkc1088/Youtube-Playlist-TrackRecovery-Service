@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import youtube.youtubeProject.domain.Music;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,10 @@ public class YoutubeRepositoryV5 implements YoutubeRepository {
 
     @Override
     public List<Music> findAllMusicByPlaylistId(String playlistId) {
-        return repository.findByVideoPlaylistIdLike(playlistId);
+//        return repository.findByVideoPlaylistIdLike(playlistId); // 원본
+//        repository.findByVideoPlaylistIdLike(playlistId);
+        return repository.findByPlaylist_PlaylistId(playlistId);
+//        return repository.findByPlaylistId(playlistId);
     }
 
     @Override

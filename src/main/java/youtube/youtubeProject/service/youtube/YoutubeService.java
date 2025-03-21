@@ -1,18 +1,13 @@
 package youtube.youtubeProject.service.youtube;
 
-import com.google.api.services.youtube.model.Video;
-import youtube.youtubeProject.domain.Playlist;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 public interface YoutubeService {
 
-    Set<Playlist> getPlaylistsByUserId(String userId);
-    void registerPlaylists(String userId) throws IOException ;
+//    Set<PlayLists> getPlaylistsByUserId(String userId);
+//    void registerPlaylists(String userId) throws IOException;
     void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
-    void fileTrackAndRecover(String userEmail, String playlistId) throws IOException; // service version 1
+    void fileTrackAndRecover(String userId, String playlistId) throws IOException; // service version 1
     void updatePlaylist(String playlistId) throws IOException; // service version 2
 
 

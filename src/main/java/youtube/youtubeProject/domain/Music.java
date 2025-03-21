@@ -1,12 +1,9 @@
 package youtube.youtubeProject.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Entity
 @Getter @Setter
@@ -24,19 +21,20 @@ public class Music {
     private String videoTags; //    @ElementCollection private List<String> videoTags;
     private int videoPlaylistPosition;
 
+
     @ManyToOne
     @JoinColumn(name = "playlistId", nullable = false) // FK 선언하기
-    private Playlist playlist;
+    private Playlists playlist;
 
 
-    public Music(String videoId, String videoTitle, String playlist) {
+    public Music(String videoId, String videoTitle, Playlists playlist) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
-//        this.playlist = playlist;
+        this.playlist = playlist;
     }
 
     public Music(String videoId, String videoTitle, String videoUploader, String videoDescription, String videoTags,
-                 int videoPlaylistPosition, Playlist playlist) {
+                 int videoPlaylistPosition, Playlists playlist) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
         this.videoUploader = videoUploader;

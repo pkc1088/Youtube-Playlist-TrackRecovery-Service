@@ -1,14 +1,17 @@
 package youtube.youtubeProject.scheduler;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import youtube.youtubeProject.domain.Playlists;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.gemini.GeminiService;
+import youtube.youtubeProject.service.playListsService.PlayListsService;
 import youtube.youtubeProject.service.user.UserService;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class ManagementScheduler {
 
     private final YoutubeService youtubeService;
     private final UserService userService;
+    private final PlayListsService playListsService;
     private final GeminiService service;
 
 //    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
@@ -29,9 +33,39 @@ public class ManagementScheduler {
         System.out.println(text);
     }
 
-    /*
-    로그인 귀찮으니 refresh Token 으로 픒레이리스트에 바로 집어넣게 Schedule 짜자
-     */
+
+    // 이거 먼저 테스트하면 됨. (단순히 유저 한 명으로 User/PlayLists/Music 테이블 다 들어오는지 확인
+//    @Scheduled(fixedRate = 30000, initialDelayString = "2000")
+    public void allAddScenarioToOnePerson() throws IOException {
+        System.err.println("auto scheduler activated");
+        // 1. 회원 등록은 이미 했음 (회원가입 시)
+        String userId  = "112735690496635663877";
+        // 2. 플레이리스트 모두 등록
+        // 3. 음악 모두 등록
+        playListsService.registerPlaylists(userId);
+        System.err.println("auto scheduler done");
+    }
+
+    @Transactional
+    @Scheduled(fixedRate = 50000, initialDelayString = "2000")
+    public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
+        System.err.println("auto scheduler activated");
+        // 0. 전체 유저 목록에서 순차적으로 유저를 뽑아 오는 시나리오 있다 치고
+        String userId  = "112735690496635663877";
+        // 1. 해당 유저에 딸린 모든 플레이리스트를 등록
+//        playListsService.registerPlaylists(userId);
+        // 2. 유저 아이디로 조회한 모든 플레이리스트를 디비에서 뽑아서 복구 시스템 가동
+        Set<Playlists> playListsSet = playListsService.getPlaylistsByUserId(userId);
+        for (Playlists playlist : playListsSet) {
+            System.out.println(playlist.getPlaylistTitle() + " start");
+            youtubeService.fileTrackAndRecover(userId, playlist.getPlaylistId());
+        }
+
+        System.err.println("auto scheduler done");
+    }
+
+
+
 
 //    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
     public void updateTest() throws IOException {
@@ -49,14 +83,4 @@ public class ManagementScheduler {
         youtubeService.fileTrackAndRecover(user.getUserId(), playlistId);
         System.err.println("auto scheduler done");
     }
-
-
-//    @Scheduled(fixedRate = 30000, initialDelayString = "2000")
-    public void channelTest() throws IOException {
-        System.err.println("auto scheduler activated");
-        String userId  = "112735690496635663877";
-
-        System.err.println("auto scheduler done");
-    }
-
 }
