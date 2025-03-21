@@ -1,20 +1,14 @@
 package youtube.youtubeProject.controller;
 
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.Video;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import youtube.youtubeProject.domain.Users;
-import youtube.youtubeProject.service.user.UserService;
+import youtube.youtubeProject.service.users.UserService;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -41,11 +35,11 @@ public class YoutubeControllerV5 {
     }
 
 
-    @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
-    public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
-        youtubeService.initiallyAddVideoDetails(playlistId);
-        return "redirect:/welcome";
-    }
+//    @GetMapping("{playlistId}/initiallyAddVideoDetails") // for user display
+//    public String InitiallyAddVideoDetails(@PathVariable String playlistId, Model model) throws IOException {
+//        youtubeService.initiallyAddVideoDetails(playlistId);
+//        return "redirect:/welcome";
+//    }
 
 //    @GetMapping("{channelId}/playlists") // - just for test
 //    public String getPlaylists(@PathVariable String channelId, Model model) throws IOException {

@@ -1,4 +1,4 @@
-package youtube.youtubeProject.repository.user;
+package youtube.youtubeProject.repository.users;
 
 import youtube.youtubeProject.domain.Users;
 
@@ -6,7 +6,8 @@ public interface UserRepository {
     Users findByUserEmail(String email);
     Users findByUserId(String userId);
     void saveUser(Users user);
-    void updateRefreshTokenByLogin(String email, String refreshToken);
+
+    //    void updateRefreshTokenByLogin(String email, String refreshToken);
 
 
 

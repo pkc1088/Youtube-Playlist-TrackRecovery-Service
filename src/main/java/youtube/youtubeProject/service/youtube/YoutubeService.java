@@ -4,11 +4,12 @@ import java.io.IOException;
 
 public interface YoutubeService {
 
-//    Set<PlayLists> getPlaylistsByUserId(String userId);
-//    void registerPlaylists(String userId) throws IOException;
-    void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
+
+//    void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
+
+//    void updatePlaylist(String playlistId) throws IOException; // service version 2
     void fileTrackAndRecover(String userId, String playlistId) throws IOException; // service version 1
-    void updatePlaylist(String playlistId) throws IOException; // service version 2
+
 
 
 //    Video getVideoDetails(String videoId) throws IOException; 여기에 선언할 이유는 없다?

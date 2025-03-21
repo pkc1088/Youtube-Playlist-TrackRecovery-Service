@@ -1,10 +1,10 @@
-package youtube.youtubeProject.service.user;
+package youtube.youtubeProject.service.users;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Users;
-import youtube.youtubeProject.repository.user.UserRepository;
+import youtube.youtubeProject.repository.users.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -12,14 +12,14 @@ public class UserServiceV1 implements UserService {
 
     private final UserRepository userRepository;
 
-    @Override
-    public Users getUserByEmail(String email) {
-        Users user = userRepository.findByUserEmail(email);
-        if (user != null) {
-            return user;
-        }
-        throw new RuntimeException("User not found - getUserByEmail");
-    }
+//    @Override
+//    public Users getUserByEmail(String email) {
+//        Users user = userRepository.findByUserEmail(email);
+//        if (user != null) {
+//            return user;
+//        }
+//        throw new RuntimeException("User not found - getUserByEmail");
+//    }
 
     @Override
     public Users getUserByUserId(String userId) {

@@ -16,13 +16,14 @@ public class Playlists {
     private String playlistId;
     private String playlistTitle;
     private String serviceType;
+
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "userId", nullable = false) // Users.userId를 FK로 가짐
     private Users user;
 
-
-    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Music> playlistItems;
+//    없어도 되는 듯?
+//    @OneToMany(mappedBy = "playlistId", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<Music> playlistItems;
 
 
     public Playlists(String playlistId, String playlistTitle, String serviceType, Users user) {

@@ -3,19 +3,21 @@ package youtube.youtubeProject.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import youtube.youtubeProject.repository.playLists.PlayListsRepository;
-import youtube.youtubeProject.repository.playLists.PlayListsRepositoryV1;
-import youtube.youtubeProject.repository.playLists.SdjPlayListsRepository;
-import youtube.youtubeProject.repository.user.SdjUserRepository;
-import youtube.youtubeProject.repository.user.UserRepository;
-import youtube.youtubeProject.repository.user.UserRepositoryV1;
-import youtube.youtubeProject.repository.youtube.SdjYoutubeRepository;
-import youtube.youtubeProject.repository.youtube.YoutubeRepository;
-import youtube.youtubeProject.repository.youtube.YoutubeRepositoryV5;
-import youtube.youtubeProject.service.playListsService.PlayListsService;
-import youtube.youtubeProject.service.playListsService.PlayListsServiceV1;
-import youtube.youtubeProject.service.user.UserService;
-import youtube.youtubeProject.service.user.UserServiceV1;
+import youtube.youtubeProject.repository.musics.MusicRepository;
+import youtube.youtubeProject.repository.musics.MusicRepositoryV1;
+import youtube.youtubeProject.repository.musics.SdjMusicRepository;
+import youtube.youtubeProject.repository.playlists.PlaylistRepository;
+import youtube.youtubeProject.repository.playlists.PlaylistRepositoryV1;
+import youtube.youtubeProject.repository.playlists.SdjPlaylistRepository;
+import youtube.youtubeProject.repository.users.SdjUserRepository;
+import youtube.youtubeProject.repository.users.UserRepository;
+import youtube.youtubeProject.repository.users.UserRepositoryV1;
+import youtube.youtubeProject.service.musics.MusicService;
+import youtube.youtubeProject.service.musics.MusicServiceV1;
+import youtube.youtubeProject.service.playlists.PlaylistService;
+import youtube.youtubeProject.service.playlists.PlaylistServiceV1;
+import youtube.youtubeProject.service.users.UserService;
+import youtube.youtubeProject.service.users.UserServiceV1;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 import youtube.youtubeProject.service.youtube.YoutubeServiceV5;
 
@@ -23,13 +25,14 @@ import youtube.youtubeProject.service.youtube.YoutubeServiceV5;
 @RequiredArgsConstructor
 public class SpringDataJpaConfig {
 
-    private final SdjYoutubeRepository springDataJpaYoutubeRepository;
+//    private final SdjYoutubeRepository springDataJpaYoutubeRepository;
     private final SdjUserRepository sdjUserRepository;
-    private final SdjPlayListsRepository sdjPlaylistRepository;
+    private final SdjPlaylistRepository sdjPlaylistRepository;
+    private final SdjMusicRepository sdjMusicRepository;
 
     @Bean
     public YoutubeService youtubeService() {
-        return new YoutubeServiceV5(youtubeRepository(), userRepository(), playlistRepository());
+        return new YoutubeServiceV5(userRepository(), playlistRepository(), musicRepository(), musicService());
     }
 
     @Bean
@@ -38,15 +41,21 @@ public class SpringDataJpaConfig {
     }
 
     @Bean
-    public PlayListsService playListsService() {
-        return new PlayListsServiceV1(userRepository(), playlistRepository(), youtubeService());
+    public PlaylistService playlistService() {
+        return new PlaylistServiceV1(userRepository(), playlistRepository(), musicService());
     }
-
 
     @Bean
-    public YoutubeRepository youtubeRepository() {
-        return new YoutubeRepositoryV5(springDataJpaYoutubeRepository);
+    public MusicService musicService() {
+        return new MusicServiceV1(playlistRepository(), musicRepository());
     }
+
+    ///////////////
+
+//    @Bean
+//    public YoutubeRepository youtubeRepository() {
+//        return new YoutubeRepositoryV5(springDataJpaYoutubeRepository);
+//    }
 
     @Bean
     public UserRepository userRepository() {
@@ -54,8 +63,12 @@ public class SpringDataJpaConfig {
     }
 
     @Bean
-    public PlayListsRepository playlistRepository() {
-        return new PlayListsRepositoryV1(sdjPlaylistRepository);
+    public PlaylistRepository playlistRepository() {
+        return new PlaylistRepositoryV1(sdjPlaylistRepository);
     }
 
+    @Bean
+    public MusicRepository musicRepository() {
+        return new MusicRepositoryV1(sdjMusicRepository);
+    }
 }

@@ -1,4 +1,4 @@
-package youtube.youtubeProject.repository.playLists;
+package youtube.youtubeProject.repository.playlists;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -8,9 +8,9 @@ import youtube.youtubeProject.domain.Playlists;
 @Repository
 @Transactional
 @RequiredArgsConstructor
-public class PlayListsRepositoryV1 implements PlayListsRepository {
+public class PlaylistRepositoryV1 implements PlaylistRepository {
 
-    private final SdjPlayListsRepository repository;
+    private final SdjPlaylistRepository repository;
 
 
     @Override

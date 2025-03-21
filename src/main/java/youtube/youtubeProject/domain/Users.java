@@ -18,7 +18,7 @@ public class Users {
     private String userEmail;
     private String refreshToken;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) // 이 필드는 Playlists 의 Users user 가 주인임
     private Set<Playlists> playlists;
     // private boolean serviceAvailable;
 

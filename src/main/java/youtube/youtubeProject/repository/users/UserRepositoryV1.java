@@ -1,11 +1,9 @@
-package youtube.youtubeProject.repository.user;
+package youtube.youtubeProject.repository.users;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import youtube.youtubeProject.domain.Users;
-
-import java.util.Optional;
 
 @Repository
 @Transactional
@@ -28,14 +26,14 @@ public class UserRepositoryV1 implements UserRepository {
         repository.save(user);
     }
 
-    @Override
-    public void updateRefreshTokenByLogin(String email, String refreshToken) {
-        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByUserEmail(email));
-        if(optionalUsers.isPresent()) {
-            Users user = optionalUsers.get();
-            user.setRefreshToken(refreshToken);
-        }
-    }
+//    @Override
+//    public void updateRefreshTokenByLogin(String email, String refreshToken) {
+//        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByUserEmail(email));
+//        if(optionalUsers.isPresent()) {
+//            Users user = optionalUsers.get();
+//            user.setRefreshToken(refreshToken);
+//        }
+//    }
 
 //    public Users findByAccessToken(String email) {
 //        return repository.findByAccessToken(email);

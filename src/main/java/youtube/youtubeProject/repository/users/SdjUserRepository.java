@@ -1,4 +1,4 @@
-package youtube.youtubeProject.repository.user;
+package youtube.youtubeProject.repository.users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import youtube.youtubeProject.domain.Users;

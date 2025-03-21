@@ -23,7 +23,7 @@ public class Music {
 
 
     @ManyToOne
-    @JoinColumn(name = "playlistId", nullable = false) // FK 선언하기
+    @JoinColumn(name = "playlistId", nullable = false) // Playlists playlistId 를 FK 로 지정
     private Playlists playlist;
 
 

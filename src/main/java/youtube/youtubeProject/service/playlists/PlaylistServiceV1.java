@@ -1,42 +1,41 @@
-package youtube.youtubeProject.service.playListsService;
+package youtube.youtubeProject.service.playlists;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistListResponse;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Playlists;
 import youtube.youtubeProject.domain.Users;
-import youtube.youtubeProject.repository.playLists.PlayListsRepository;
-import youtube.youtubeProject.repository.user.UserRepository;
-import youtube.youtubeProject.service.youtube.YoutubeService;
+import youtube.youtubeProject.repository.playlists.PlaylistRepository;
+import youtube.youtubeProject.repository.users.UserRepository;
+import youtube.youtubeProject.service.musics.MusicService;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
 @Service
-public class PlayListsServiceV1 implements PlayListsService{
+public class PlaylistServiceV1 implements PlaylistService {
 
     @Value("${youtube.api.key}")
     private String apiKey;
     private static YouTube youtube;
     private final UserRepository userRepository;
-    private final PlayListsRepository playlistRepository;
-    private final YoutubeService youtubeService; // 맞나?
+    private final PlaylistRepository playlistRepository;
+//    private final YoutubeService youtubeService; // 맞나?
+    private final MusicService musicService;
 
-    public PlayListsServiceV1(UserRepository userRepository, PlayListsRepository playlistRepository, YoutubeService youtubeService) {
+    public PlaylistServiceV1(UserRepository userRepository, PlaylistRepository playlistRepository, MusicService musicService) {
         this.userRepository = userRepository;
         this.playlistRepository = playlistRepository;
-        this.youtubeService = youtubeService;
+        this.musicService = musicService;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
     @Override
-//    @Transactional // added
     public Set<Playlists> getPlaylistsByUserId(String userId){ // DB에 저장된 플레이리스트들을 반환하면 됨
         // DB 에서 userId로 조회 후 리턴
         Users user = userRepository.findByUserId(userId);
@@ -66,7 +65,7 @@ public class PlayListsServiceV1 implements PlayListsService{
             playlistRepository.save(playlist);
 
             // 4. 해당 플레이리스트에 딸린 모든 음악을 Music 도메인에 저장
-            youtubeService.initiallyAddVideoDetails(getPlaylist.getId());
+            musicService.initiallyAddVideoDetails(getPlaylist.getId());
         }
 
     }

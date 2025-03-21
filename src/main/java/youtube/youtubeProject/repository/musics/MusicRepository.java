@@ -1,0 +1,14 @@
+package youtube.youtubeProject.repository.musics;
+
+import youtube.youtubeProject.domain.Music;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface MusicRepository {
+    List<Music> findAllMusicByPlaylistId(String playlistId);
+    Optional<Music> getMusicFromDBThruMusicId(String videoIdToDelete);
+    void addUpdatePlaylist(String playlistId, Music music);
+    void deleteUpdatePlaylist(String playlistId, String videoId);
+    void dBTrackAndRecover(String videoIdToDelete, Music videoToRecover);
+}
