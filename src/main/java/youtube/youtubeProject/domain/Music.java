@@ -21,9 +21,8 @@ public class Music {
     private String videoTags; //    @ElementCollection private List<String> videoTags;
     private int videoPlaylistPosition;
 
-
     @ManyToOne
-    @JoinColumn(name = "playlistId", nullable = false) // Playlists playlistId 를 FK 로 지정
+    @JoinColumn(name = "playlistId", nullable = false) // Playlists playlistId 를 FK 로 지정. name은 DB에 저장될 이름임
     private Playlists playlist;
 
 

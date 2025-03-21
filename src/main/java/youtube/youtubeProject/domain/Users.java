@@ -18,8 +18,9 @@ public class Users {
     private String userEmail;
     private String refreshToken;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) // 이 필드는 Playlists 의 Users user 가 주인임
-    private Set<Playlists> playlists;
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true) // 이 필드는 Playlists 의 Users user 가 주인임
+//    private Set<Playlists> playlists;
+
     // private boolean serviceAvailable;
 
     public Users(String userId, String userName, String userChannelId, String userEmail, String refreshToken) {
@@ -30,7 +31,3 @@ public class Users {
         this.refreshToken = refreshToken;
     }
 }
-//    public Users() {}
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;

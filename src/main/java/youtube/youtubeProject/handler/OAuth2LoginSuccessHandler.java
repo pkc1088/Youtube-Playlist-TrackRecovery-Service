@@ -6,6 +6,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -24,6 +25,7 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.StringTokenizer;
 
+@Slf4j
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
@@ -38,7 +40,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        System.err.println("onAuthentication Success");
+        log.info("onAuthentication Success");
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
                     oauthToken.getAuthorizedClientRegistrationId(),
@@ -49,7 +51,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             String userId = oauthToken.getPrincipal().getName();    // 112735690496635663877, 107155055893692546350
 
             if(alreadyMember(userId)) {
-                System.out.println("you are already a member of this service");
+                log.info("you are already a member of this service");
                 //updateRefreshTokenByLogin(email, refreshToken);// registered member
             } else {
                 String fullName = ((OidcUser) oauthToken.getPrincipal()).getFullName(); // pkc1088, whistle_missile 등
@@ -59,7 +61,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                 } catch (GeneralSecurityException e) { throw new RuntimeException(e); }
                 String email = ((OidcUser) oauthToken.getPrincipal()).getEmail();
                 if (isTemporaryEmail(email)) {
-                    System.err.println("Temporary Email");
+                    log.info("Temporary Email");
                     email = getRealEmail(email, oauthToken);
                 }
                 String refreshToken = authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken().getTokenValue() : null;
@@ -73,21 +75,21 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private boolean alreadyMember(String userId) {
         try{
             if(userId.equals(userService.getUserByUserId(userId).getUserId())) {
-                System.err.println("Registered Member");
+                log.info("Registered Member");
                 return true;
             }
         } catch (RuntimeException e) {
-            System.err.println("New Member");
+            log.info("New Member");
         }
         return false;
     }
 
     public void saveUsersToDatabase(String id, String fullName, String channelId, String email, String refreshToken) {
-        System.out.println("new member Id: " + id);
-        System.out.println("new member Name: " + fullName);
-        System.out.println("new member ChannelId: " + channelId);
-        System.out.println("new member Email: " + email);
-        System.out.println("new member Refresh Token: " + refreshToken);
+        log.info("new member Id: {}", id);
+        log.info("new member Name: {}", fullName);
+        log.info("new member Email: {}", email);
+        log.info("new member ChannelId: {}", channelId);
+        log.info("new member Refresh Token: {}", refreshToken);
         userService.saveUser(new Users(id, fullName, channelId, email, refreshToken));
     }
 

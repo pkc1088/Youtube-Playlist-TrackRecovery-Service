@@ -13,6 +13,7 @@ import youtube.youtubeProject.service.playlists.PlaylistService;
 import youtube.youtubeProject.service.users.UserService;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -48,7 +49,7 @@ public class ManagementScheduler {
         log.info("auto scheduler done");
     }
 
-    @Transactional
+//    @Transactional
     @Scheduled(fixedRate = 50000, initialDelayString = "2000")
     public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
         log.info("auto scheduler activated");
@@ -56,7 +57,7 @@ public class ManagementScheduler {
         String userId  = "112735690496635663877";
 
         // 1. 유저 아이디로 조회한 모든 플레이리스트를 디비에서 뽑아서 복구 시스템 가동
-        Set<Playlists> playListsSet = playlistService.getPlaylistsByUserId(userId);
+        List<Playlists> playListsSet = playlistService.getPlaylistsByUserId(userId);
         for (Playlists playlist : playListsSet) {
             log.info("{} start", playlist.getPlaylistTitle());
             youtubeService.fileTrackAndRecover(userId, playlist.getPlaylistId());

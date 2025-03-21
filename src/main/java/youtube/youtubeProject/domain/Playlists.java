@@ -22,7 +22,7 @@ public class Playlists {
     private Users user;
 
 //    없어도 되는 듯?
-//    @OneToMany(mappedBy = "playlistId", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Music> playlistItems;
 
 

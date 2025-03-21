@@ -15,6 +15,7 @@ import youtube.youtubeProject.service.musics.MusicService;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -25,7 +26,6 @@ public class PlaylistServiceV1 implements PlaylistService {
     private static YouTube youtube;
     private final UserRepository userRepository;
     private final PlaylistRepository playlistRepository;
-//    private final YoutubeService youtubeService; // 맞나?
     private final MusicService musicService;
 
     public PlaylistServiceV1(UserRepository userRepository, PlaylistRepository playlistRepository, MusicService musicService) {
@@ -36,10 +36,10 @@ public class PlaylistServiceV1 implements PlaylistService {
     }
 
     @Override
-    public Set<Playlists> getPlaylistsByUserId(String userId){ // DB에 저장된 플레이리스트들을 반환하면 됨
+    public List<Playlists> getPlaylistsByUserId(String userId){ // DB에 저장된 플레이리스트들을 반환하면 됨
         // DB 에서 userId로 조회 후 리턴
-        Users user = userRepository.findByUserId(userId);
-        return user.getPlaylists();
+//        Users user = userRepository.findByUserId(userId);
+        return playlistRepository.findAllPlaylistsByUserId(userId);
     }
 
     public void registerPlaylists(String userId) throws IOException {

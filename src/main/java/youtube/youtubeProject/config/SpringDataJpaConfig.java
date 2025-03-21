@@ -25,7 +25,6 @@ import youtube.youtubeProject.service.youtube.YoutubeServiceV5;
 @RequiredArgsConstructor
 public class SpringDataJpaConfig {
 
-//    private final SdjYoutubeRepository springDataJpaYoutubeRepository;
     private final SdjUserRepository sdjUserRepository;
     private final SdjPlaylistRepository sdjPlaylistRepository;
     private final SdjMusicRepository sdjMusicRepository;
@@ -50,12 +49,6 @@ public class SpringDataJpaConfig {
         return new MusicServiceV1(playlistRepository(), musicRepository());
     }
 
-    ///////////////
-
-//    @Bean
-//    public YoutubeRepository youtubeRepository() {
-//        return new YoutubeRepositoryV5(springDataJpaYoutubeRepository);
-//    }
 
     @Bean
     public UserRepository userRepository() {

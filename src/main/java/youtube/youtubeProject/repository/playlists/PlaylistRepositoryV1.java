@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import youtube.youtubeProject.domain.Playlists;
+import java.util.List;
 
 @Repository
 @Transactional
@@ -21,5 +22,10 @@ public class PlaylistRepositoryV1 implements PlaylistRepository {
     @Override
     public Playlists findByPlaylistId(String playlistId) {
         return repository.findByPlaylistId(playlistId);
+    }
+
+    @Override
+    public List<Playlists> findAllPlaylistsByUserId(String userId) {
+        return repository.findByUser_UserId(userId);
     }
 }
