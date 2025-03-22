@@ -11,7 +11,17 @@ import youtube.youtubeProject.policy.simple.SimpleSearchPolicy;
 
 @Configuration
 public class SearchConfig {
-
+    /** 이방식 테스트 해보기
+    @Bean
+    public Map<String, SearchPolicy> searchPolicyMap(
+            @Qualifier("simpleSearchQuery") SearchPolicy simpleSearchQuery,
+            @Qualifier("geminiSearchQuery") SearchPolicy geminiSearchQuery) {
+        Map<String, SearchPolicy> policyMap = new HashMap<>();
+        policyMap.put("simple", simpleSearchQuery);
+        policyMap.put("gemini", geminiSearchQuery);
+        return policyMap;
+    }
+     */
     @Bean
     @Qualifier("simpleSearchQuery")
     public SearchPolicy simpleSearchQuery() {

@@ -25,7 +25,7 @@ public class ManagementScheduler {
     private final SearchPolicy searchPolicy;
 
     @Autowired
-    public ManagementScheduler(
+    public ManagementScheduler( // @Qualifier("simpleSearchQuery")
             PlaylistService playlistService, YoutubeService youtubeService, UserService userService,
             @Qualifier("geminiSearchQuery") SearchPolicy searchPolicy) {
         this.playlistService = playlistService;
@@ -34,15 +34,12 @@ public class ManagementScheduler {
         this.searchPolicy = searchPolicy;
     }
 
-    @Scheduled(fixedRate = 30000, initialDelayString = "2000")
+//    @Scheduled(fixedRate = 30000, initialDelayString = "2000")
     public void geminiTest() {
-
         Music musicToSearch = new Music();
         musicToSearch.setVideoTitle("kiss and say goodbye");
         musicToSearch.setVideoUploader("the manhattans");
-
         String text = searchPolicy.search(musicToSearch);
-
         System.out.println(text);
     }
 
@@ -57,7 +54,7 @@ public class ManagementScheduler {
         log.info("auto scheduler done");
     }
 
-//    @Scheduled(fixedRate = 50000, initialDelayString = "2000")  //    @Transactional
+    @Scheduled(fixedRate = 50000, initialDelayString = "2000")  //    @Transactional
     public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
         log.info("auto scheduler activated");
         // 0. 전체 유저 목록에서 순차적으로 유저를 뽑아 오는 시나리오 있다 치고

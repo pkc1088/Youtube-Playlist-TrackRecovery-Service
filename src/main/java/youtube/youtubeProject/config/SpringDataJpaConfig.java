@@ -1,8 +1,11 @@
 package youtube.youtubeProject.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import youtube.youtubeProject.policy.SearchPolicy;
 import youtube.youtubeProject.repository.musics.MusicRepository;
 import youtube.youtubeProject.repository.musics.MusicRepositoryV1;
 import youtube.youtubeProject.repository.musics.SdjMusicRepository;
@@ -21,17 +24,28 @@ import youtube.youtubeProject.service.users.UserServiceV1;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 import youtube.youtubeProject.service.youtube.YoutubeServiceV5;
 
+//@RequiredArgsConstructor
 @Configuration
-@RequiredArgsConstructor
 public class SpringDataJpaConfig {
 
     private final SdjUserRepository sdjUserRepository;
     private final SdjPlaylistRepository sdjPlaylistRepository;
     private final SdjMusicRepository sdjMusicRepository;
+    private final SearchPolicy searchPolicy;
+
+    @Autowired
+    public SpringDataJpaConfig(
+            SdjUserRepository sdjUserRepository, SdjPlaylistRepository sdjPlaylistRepository, SdjMusicRepository sdjMusicRepository,
+            @Qualifier("geminiSearchQuery") SearchPolicy searchPolicy) {
+        this.sdjUserRepository = sdjUserRepository;
+        this.sdjPlaylistRepository = sdjPlaylistRepository;
+        this.sdjMusicRepository = sdjMusicRepository;
+        this.searchPolicy = searchPolicy;
+    }
 
     @Bean
     public YoutubeService youtubeService() {
-        return new YoutubeServiceV5(playlistRepository(), musicRepository(), musicService());
+        return new YoutubeServiceV5(playlistRepository(), musicRepository(), musicService(), searchPolicy);
     }
 
     @Bean

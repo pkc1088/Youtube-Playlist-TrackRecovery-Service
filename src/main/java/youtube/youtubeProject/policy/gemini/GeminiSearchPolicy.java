@@ -41,6 +41,7 @@ public class GeminiSearchPolicy implements SearchPolicy {
 
     @Override
     public String search(Music musicToSearch) {
+        System.err.println("Gemini Search Policy");
         String query = musicToSearch.getVideoTitle().concat("-").concat(musicToSearch.getVideoUploader())
                 .concat(" 이 정보를 보고 '노래제목-가수' 형태로 알려줘 무조건 저 양식을 지켜서");
         return getCompletion(GEMINI_FLASH, query);

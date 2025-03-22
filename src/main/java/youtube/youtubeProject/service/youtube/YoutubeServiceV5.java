@@ -7,9 +7,12 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Music;
+import youtube.youtubeProject.policy.SearchPolicy;
 import youtube.youtubeProject.repository.musics.MusicRepository;
 import youtube.youtubeProject.repository.playlists.PlaylistRepository;
 import youtube.youtubeProject.service.musics.MusicService;
@@ -29,11 +32,14 @@ public class YoutubeServiceV5 implements YoutubeService {
     private final MusicRepository musicRepository;
     private final PlaylistRepository playlistRepository;
     private final MusicService musicService;
+    private final SearchPolicy searchPolicy; // Map<String, SearchPolicy> searchPolicyMap; 테스트 해보기
 
-    public YoutubeServiceV5(PlaylistRepository playlistRepository, MusicRepository musicRepository, MusicService musicService) {
+    public YoutubeServiceV5(PlaylistRepository playlistRepository, MusicRepository musicRepository,
+                            MusicService musicService, @Qualifier("geminiSearchQuery") SearchPolicy searchPolicy) {
         this.playlistRepository = playlistRepository;
         this.musicRepository = musicRepository;
         this.musicService = musicService;
+        this.searchPolicy = searchPolicy;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
@@ -103,11 +109,13 @@ public class YoutubeServiceV5 implements YoutubeService {
     }
 
     public Music searchVideoToReplace(Music musicToSearch, String playlistId) throws IOException {
-
+/**
+ * searchPolicy 테스트 해보기
+ */
         // 방법 1. 단순 검색
-        String query = musicToSearch.getVideoTitle().concat("-").concat(musicToSearch.getVideoUploader());
+        String query = searchPolicy.search(musicToSearch);
+//        String query = musicToSearch.getVideoTitle().concat("-").concat(musicToSearch.getVideoUploader());
         log.info("searched with : {}", query);
-
         // 방법 2. Gemini 사용
         // getUsefulInfoFromDescription();
 
