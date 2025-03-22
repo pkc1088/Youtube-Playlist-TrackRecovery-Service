@@ -1,25 +1,29 @@
 package youtube.youtubeProject.service.users;
 
-
+import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.repository.users.UserRepository;
 
+import java.io.IOException;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceV1 implements UserService {
 
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String clientId;
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String clientSecret;
     private final UserRepository userRepository;
 
-//    @Override
-//    public Users getUserByEmail(String email) {
-//        Users user = userRepository.findByUserEmail(email);
-//        if (user != null) {
-//            return user;
-//        }
-//        throw new RuntimeException("User not found - getUserByEmail");
-//    }
 
     @Override
     public Users getUserByUserId(String userId) {
@@ -35,13 +39,46 @@ public class UserServiceV1 implements UserService {
         userRepository.saveUser(user);
     }
 
+    @Override
+    public String getNewAccessTokenByUserId(String userId) {
+        log.info("once a day : accessToken <- refreshToken");
+        Users user = userRepository.findByUserId(userId);
+        String refreshToken = user.getRefreshToken();
+
+        return refreshAccessToken(refreshToken);
+    }
+
+    public String refreshAccessToken(String refreshToken) { // 사실 이게 핵심인듯?
+        try {
+            GoogleRefreshTokenRequest refreshTokenRequest = new GoogleRefreshTokenRequest(
+                    new NetHttpTransport(),
+                    new GsonFactory(),
+                    refreshToken,
+                    clientId,
+                    clientSecret
+            );
+            TokenResponse tokenResponse = refreshTokenRequest.execute();
+            return tokenResponse.getAccessToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to refresh access token");
+        }
+    }
+
+}
+
+//    @Override
+//    public Users getUserByEmail(String email) {
+//        Users user = userRepository.findByUserEmail(email);
+//        if (user != null) {
+//            return user;
+//        }
+//        throw new RuntimeException("User not found - getUserByEmail");
+//    }
 //    @Override
 //    public void updateRefreshTokenByLogin(String email, String refreshToken) {
 //        userRepository.updateRefreshTokenByLogin(email, refreshToken);
 //    }
-
-
-
 //    @Value("${spring.security.oauth2.client.registration.google.client-id}")
 //    private String clientId;
 //    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
@@ -191,4 +228,3 @@ public class UserServiceV1 implements UserService {
 //
 //        return (String) response.getBody().get("access_token");
 //    }
-}

@@ -31,7 +31,7 @@ public class SpringDataJpaConfig {
 
     @Bean
     public YoutubeService youtubeService() {
-        return new YoutubeServiceV5(userRepository(), playlistRepository(), musicRepository(), musicService());
+        return new YoutubeServiceV5(playlistRepository(), musicRepository(), musicService());
     }
 
     @Bean

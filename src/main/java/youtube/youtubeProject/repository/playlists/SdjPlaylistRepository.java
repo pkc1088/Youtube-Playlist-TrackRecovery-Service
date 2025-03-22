@@ -9,7 +9,6 @@ public interface SdjPlaylistRepository extends JpaRepository<Playlists, String> 
 
     Playlists findByPlaylistId(String playlistId);
 
-//    List<Music> findByPlaylist_PlaylistId(String playlistId);
     List<Playlists> findByUser_UserId(String userId);
 
 }

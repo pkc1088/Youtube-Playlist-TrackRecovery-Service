@@ -1,8 +1,6 @@
 package youtube.youtubeProject.service.youtube;
 
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
@@ -12,10 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import youtube.youtubeProject.domain.Music;
-import youtube.youtubeProject.domain.Users;
 import youtube.youtubeProject.repository.musics.MusicRepository;
 import youtube.youtubeProject.repository.playlists.PlaylistRepository;
-import youtube.youtubeProject.repository.users.UserRepository;
 import youtube.youtubeProject.service.musics.MusicService;
 
 import java.io.IOException;
@@ -28,26 +24,18 @@ public class YoutubeServiceV5 implements YoutubeService {
 
     @Value("${youtube.api.key}")
     private String apiKey;
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String clientId;
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String clientSecret;
 
     private static YouTube youtube;
     private final MusicRepository musicRepository;
-    private final UserRepository userRepository;
     private final PlaylistRepository playlistRepository;
     private final MusicService musicService;
 
-    public YoutubeServiceV5(UserRepository userRepository, PlaylistRepository playlistRepository,
-                            MusicRepository musicRepository, MusicService musicService) {
-        this.userRepository = userRepository;
+    public YoutubeServiceV5(PlaylistRepository playlistRepository, MusicRepository musicRepository, MusicService musicService) {
         this.playlistRepository = playlistRepository;
         this.musicRepository = musicRepository;
         this.musicService = musicService;
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
-
 
     public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
@@ -57,55 +45,39 @@ public class YoutubeServiceV5 implements YoutubeService {
         return request.execute();
     }
 
-    @Override
-    public void fileTrackAndRecover(String userId, String playlistId) throws IOException {
-        // 0. userId로 먼저 조회 후 거기에 딸린 많은 playlistId 추출해서 반복문 돌릴 수 있음
 
+    @Override
+    public void fileTrackAndRecover(String userId, String playlistId, String accessToken) throws IOException {
+        // 0. userId로 먼저 조회 후 거기에 딸린 많은 playlistId 추출해서 반복문 돌릴 수 있음
         // 1. 사용자의 업데이트된 목록 최신화 로직 <- Music 으로 편입
         musicService.updatePlaylist(playlistId); // 주입 받아야함
-
         // 2. 비정상적인 파일 추적
         Map<String, Long> illegalVideos = getIllegalPlaylistItemList(playlistId); // videoId, Position 뽑기
         if(illegalVideos.isEmpty()) {
             log.info("There's no music to recover");
             return;
         }
-
-        /**
-         * 지금 이 코드 문제가 플레이리스별로 토큰을 새로 발급하고 있음
-         * 플레이리스트 기준이 아니라 고객 별로 발급 받아도 충분하다. 이거 수정해야함
-         */
-        // 3. 토큰 획득 1일 1회 (accessToken <- refreshToken)
-        log.info("once a day : accessToken <- refreshToken");
-        Users user = userRepository.findByUserId(userId);
-        String refreshToken = user.getRefreshToken();
-        String accessToken = refreshAccessToken(refreshToken);
-
-        // 4. 복구 시스템 가동
+        // 3. 복구 시스템 가동
         for (String videoIdToDelete : illegalVideos.keySet()) {
             // illegal video 가 여러개일 수 있으니
             long videoPosition = illegalVideos.get(videoIdToDelete);
             //System.err.println("Tracked Illegal Music (" + videoIdToDelete + ") at index " + videoPosition);
             log.info("Tracked Illegal Music ({}) at index {}", videoIdToDelete, videoPosition);
-
-            // 4-1. DB 에서 videoId로 검색해서 백업된 Music 객체를 가져옴
+        // 4. DB 에서 videoId로 검색해서 백업된 Music 객체를 가져옴
             Optional<Music> optionalBackUpMusic = musicRepository.getMusicFromDBThruMusicId(videoIdToDelete);
             Music backupMusic = optionalBackUpMusic.orElse(null);
-
-            // 4-2. 그 Music 으로 유튜브에 검색을 함 search 해서 return 받음
+        // 5. 그 Music 으로 유튜브에 검색을 함 search 해서 return 받음
             if(backupMusic == null) {
-                // 4-2-1. backupMusic 이 null 이면 백업 안된 영상. 즉 사용자가 최근에 추가했지만 빠르게 삭제된 영상
+        // 6. backupMusic 이 null 이면 백업 안된 영상. 즉 사용자가 최근에 추가했지만 빠르게 삭제된 영상
                 deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
                 // updatePlaylist 행위때 그런 음악은 디비에 저장 안했으니 디비 수정할 이유는 없다
                 continue;
             }
-            // 4-2-2. backupMusic 이 null 이 아니면 백업된 영상임 (search 알고리즘 강화 필요)
+        // 7. backupMusic 이 null 이 아니면 백업된 영상임 (search 알고리즘 강화 필요)
             Music videoForRecovery = searchVideoToReplace(backupMusic, playlistId);
-
-            // 4-3. DB를 업데이트한다 CRUD 동작은 service 가 아니라 repository 가 맡아서 한다.
+        // 8. DB를 업데이트한다 CRUD 동작은 service 가 아니라 repository 가 맡아서 한다.
             musicRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
-
-            // 4-4. 실제 유튜브 플레이리스트에도 add 와 delete
+        // 9. 실제 유튜브 플레이리스트에도 add 와 delete
             addVideoToActualPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
             deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
         }
@@ -132,10 +104,11 @@ public class YoutubeServiceV5 implements YoutubeService {
 
     public Music searchVideoToReplace(Music musicToSearch, String playlistId) throws IOException {
 
+        // 방법 1. 단순 검색
         String query = musicToSearch.getVideoTitle().concat("-").concat(musicToSearch.getVideoUploader());
         log.info("searched with : {}", query);
 
-        // query 강화 필요 -> Gemini 사용
+        // 방법 2. Gemini 사용
         // getUsefulInfoFromDescription();
 
         YouTube.Search.List search = youtube.search().list(Collections.singletonList("id, snippet"));
@@ -152,7 +125,7 @@ public class YoutubeServiceV5 implements YoutubeService {
         music.setVideoUploader(searchResult.getSnippet().getChannelTitle());
         music.setVideoDescription("someDescription"); // searchResult.getSnippet().getDescription();
         music.setVideoTags("someTags"); // String videoTags = not available here
-        music.setVideoPlaylistPosition(5);  // 굳이? 필요한지 판단
+        // music.setVideoPlaylistPosition(5);  // 굳이 필요한지 판단
         music.setPlaylist(playlistRepository.findByPlaylistId(playlistId));
         log.info("Found a music to replace : {}, {}", music.getVideoTitle(), music.getVideoUploader());
 
@@ -219,25 +192,31 @@ public class YoutubeServiceV5 implements YoutubeService {
         }
     }
 
-    public String refreshAccessToken(String refreshToken) { // 사실 이게 핵심인듯?
-        try {
-            GoogleRefreshTokenRequest refreshTokenRequest = new GoogleRefreshTokenRequest(
-                    new NetHttpTransport(),
-                    new GsonFactory(),
-                    refreshToken,
-                    clientId,
-                    clientSecret
-            );
-            TokenResponse tokenResponse = refreshTokenRequest.execute();
-            return tokenResponse.getAccessToken();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to refresh access token");
-        }
-    }
-
 }
 
+//지금 이 코드 문제가 플레이리스별로 토큰을 새로 발급하고 있음
+//플레이리스트 기준이 아니라 고객 별로 발급 받아도 충분하다. 이거 수정해야함
+// 3. 토큰 획득 1일 1회 (accessToken <- refreshToken)
+//        log.info("once a day : accessToken <- refreshToken");
+//        Users user = userRepository.findByUserId(userId);
+//        String refreshToken = user.getRefreshToken();
+//        String accessToken = refreshAccessToken(refreshToken);
+//    public String refreshAccessToken(String refreshToken) { // 사실 이게 핵심인듯?
+//        try {
+//            GoogleRefreshTokenRequest refreshTokenRequest = new GoogleRefreshTokenRequest(
+//                    new NetHttpTransport(),
+//                    new GsonFactory(),
+//                    refreshToken,
+//                    clientId,
+//                    clientSecret
+//            );
+//            TokenResponse tokenResponse = refreshTokenRequest.execute();
+//            return tokenResponse.getAccessToken();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            throw new RuntimeException("Failed to refresh access token");
+//        }
+//    }
 /*
 //
 //    // musicService 로 편입 필요

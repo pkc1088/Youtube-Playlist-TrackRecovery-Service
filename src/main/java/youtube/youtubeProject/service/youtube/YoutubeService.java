@@ -4,12 +4,13 @@ import java.io.IOException;
 
 public interface YoutubeService {
 
+    void fileTrackAndRecover(String userId, String playlistId, String accessToken) throws IOException; // service version 1
+
+}
+
 
 //    void initiallyAddVideoDetails(String playlistId) throws IOException; // for user display
-
 //    void updatePlaylist(String playlistId) throws IOException; // service version 2
-    void fileTrackAndRecover(String userId, String playlistId) throws IOException; // service version 1
-
 
 
 //    Video getVideoDetails(String videoId) throws IOException; 여기에 선언할 이유는 없다?
@@ -22,5 +23,3 @@ public interface YoutubeService {
 //    void tokenTest(OAuth2AuthorizedClient authorizedClient);
 //    String memberRegister(String userId, String userPwd, String userName);
 //    void scheduledTest();
-
-}

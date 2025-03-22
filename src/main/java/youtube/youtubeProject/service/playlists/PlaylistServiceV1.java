@@ -36,9 +36,8 @@ public class PlaylistServiceV1 implements PlaylistService {
     }
 
     @Override
-    public List<Playlists> getPlaylistsByUserId(String userId){ // DB에 저장된 플레이리스트들을 반환하면 됨
+    public List<Playlists> getPlaylistsByUserId(String userId){
         // DB 에서 userId로 조회 후 리턴
-//        Users user = userRepository.findByUserId(userId);
         return playlistRepository.findAllPlaylistsByUserId(userId);
     }
 

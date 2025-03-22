@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UserService userService;
-    private final OAuth2AuthorizedClientService authorizedClientService; // 추가
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
     public OAuth2LoginSuccessHandler(UserService userService, OAuth2AuthorizedClientService authorizedClientService) {
         this.userService = userService;
@@ -52,7 +52,15 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
             if(alreadyMember(userId)) {
                 log.info("you are already a member of this service");
-                //updateRefreshTokenByLogin(email, refreshToken);// registered member
+
+                // added 25.03.22 ~
+                Users user = userService.getUserByUserId(userId);
+                String updatedRefreshToken = authorizedClient.getRefreshToken().getTokenValue();
+                if(updatedRefreshToken != null && !user.getRefreshToken().equals(updatedRefreshToken)) {
+                    user.setRefreshToken(updatedRefreshToken);
+                    log.info("refreshToken Updated");
+                }
+                // ~ done
             } else {
                 String fullName = ((OidcUser) oauthToken.getPrincipal()).getFullName(); // pkc1088, whistle_missile 등
                 String channelId;
@@ -115,7 +123,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private String getRealEmail(String email, OAuth2AuthenticationToken oauthToken) {
         StringTokenizer st = new StringTokenizer(email, "-");
         return st.nextToken() + "@gmail.com";
-        //return oauthToken.getPrincipal().getAttribute("email");
     }
 
 //    private void updateRefreshTokenByLogin(String email, String refreshToken) { // 이거 안 씀, 이렇게 하면 안됨

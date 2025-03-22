@@ -1,4 +1,4 @@
-package youtube.youtubeProject.gemini;
+package youtube.youtubeProject.policy.gemini;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,15 +14,12 @@ public class GeminiResponse {
     @Getter
     public static class Candidate {
         private Content content;
-        private String finishReason;
-        private int index;
-        List<SafetyRating> safetyRatings;
+
     }
 
     @Getter
     public static class Content {
         private List<TextPart> parts;
-        private String role;
     }
 
     @Getter
@@ -30,9 +27,15 @@ public class GeminiResponse {
         private String text;
     }
 
-    @Getter
-    public static class SafetyRating {
-        private String category;
-        private String probability;
-    }
 }
+
+
+//        private String role;
+//        private String finishReason;
+//        private int index;
+//        List<SafetyRating> safetyRatings;
+//    @Getter
+//    public static class SafetyRating {
+//        private String category;
+//        private String probability;
+//    }

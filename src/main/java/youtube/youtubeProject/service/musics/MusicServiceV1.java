@@ -34,7 +34,6 @@ public class MusicServiceV1 implements MusicService{
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
-    // musicService 로 편입 필요 ㄴㄴ 둘다 필요
     public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
         request.setKey(apiKey);
@@ -43,7 +42,6 @@ public class MusicServiceV1 implements MusicService{
         return request.execute();
     }
 
-    // musicService 로 편입 필요
     public Video getVideoDetailResponseWithFilter(String videoId) throws IOException {
         YouTube.Videos.List request = youtube.videos().list(Collections.singletonList("snippet, id, status"));
         request.setKey(apiKey);
@@ -60,7 +58,6 @@ public class MusicServiceV1 implements MusicService{
         }
     }
 
-    // musicService 로 편입 필요 ?
     @Override
     public void initiallyAddVideoDetails(String playlistId) throws IOException {
         PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
@@ -81,7 +78,7 @@ public class MusicServiceV1 implements MusicService{
             music.setVideoUploader(video.getSnippet().getChannelTitle());
             music.setVideoDescription("someDescription"); // video.getSnippet().getDescription();
             music.setVideoTags("someTags"); // video.getSnippet().getTags();
-            music.setVideoPlaylistPosition(5);  // 굳이? 필요한지 판단
+//            music.setVideoPlaylistPosition(5);  // 굳이? 필요한지 판단
             music.setPlaylist(playlistRepository.findByPlaylistId(playlistId));
             musicRepository.addUpdatePlaylist(playlistId, music);
 
@@ -91,10 +88,9 @@ public class MusicServiceV1 implements MusicService{
     }
 
     @Override
-    public void updatePlaylist(String playlistId) throws IOException { // 나중에 user 기반으로 디비 조회하도록 RDB 설계해야함 email 불필요
+    public void updatePlaylist(String playlistId) throws IOException {
         log.info("update playlist start ... {}", playlistId);
 
-//        playlistRepository.findByPlaylistId(playlistId).getPlaylistItems();
         // 1. 고객 플레이리스트 담긴 디비 불러오기
         List<Music> musicDBList = musicRepository.findAllMusicByPlaylistId(playlistId);
         Set<String> musicDBSet = musicDBList.stream().map(Music::getVideoId).collect(Collectors.toSet());

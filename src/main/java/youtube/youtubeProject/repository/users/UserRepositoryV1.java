@@ -12,10 +12,6 @@ public class UserRepositoryV1 implements UserRepository {
 
     private final SdjUserRepository repository;
 
-    @Override
-    public Users findByUserEmail(String email) {
-        return repository.findByUserEmail(email);
-    }
 
     @Override
     public Users findByUserId(String userId) {
@@ -25,7 +21,12 @@ public class UserRepositoryV1 implements UserRepository {
     public void saveUser(Users user) {
         repository.save(user);
     }
+}
 
+//    @Override
+//    public Users findByUserEmail(String email) {
+//        return repository.findByUserEmail(email);
+//    }
 //    @Override
 //    public void updateRefreshTokenByLogin(String email, String refreshToken) {
 //        Optional<Users> optionalUsers = Optional.ofNullable(repository.findByUserEmail(email));
@@ -49,4 +50,3 @@ public class UserRepositoryV1 implements UserRepository {
 //            //user.setRefreshToken(refreshToken);
 //        }
 //    }
-}

@@ -6,10 +6,10 @@ import lombok.*;
 import java.util.Set;
 
 //@Data
-//@AllArgsConstructor
 @Entity
 @Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Playlists {
 
     @Id
@@ -21,15 +21,14 @@ public class Playlists {
     @JoinColumn(name = "userId", nullable = false) // Users.userId를 FK로 가짐
     private Users user;
 
+//    public Playlists(String playlistId, String playlistTitle, String serviceType, Users user) {
+//        this.playlistId = playlistId;
+//        this.playlistTitle = playlistTitle;
+//        this.serviceType = serviceType;
+//        this.user = user;
+//    }
+}
+
 //    없어도 되는 듯?
 //    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private Set<Music> playlistItems;
-
-
-    public Playlists(String playlistId, String playlistTitle, String serviceType, Users user) {
-        this.playlistId = playlistId;
-        this.playlistTitle = playlistTitle;
-        this.serviceType = serviceType;
-        this.user = user;
-    }
-}
