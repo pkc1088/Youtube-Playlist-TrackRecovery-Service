@@ -44,7 +44,7 @@ public class ManagementScheduler {
     }
 
 
-//    @Scheduled(fixedRate = 30000, initialDelayString = "2000")
+//    @Scheduled(fixedRate = 30000, initialDelayString = "1000")
     public void allAddScenarioToOnePerson() throws IOException {
         log.info("auto scheduler activated");
         // 1. 회원 등록은 이미 했음 (회원가입 시)
@@ -54,7 +54,7 @@ public class ManagementScheduler {
         log.info("auto scheduler done");
     }
 
-    @Scheduled(fixedRate = 50000, initialDelayString = "2000")  //    @Transactional
+    @Scheduled(fixedRate = 50000, initialDelayString = "1000")  //    @Transactional
     public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
         log.info("auto scheduler activated");
         // 0. 전체 유저 목록에서 순차적으로 유저를 뽑아 오는 시나리오 있다 치고
@@ -65,6 +65,7 @@ public class ManagementScheduler {
         List<Playlists> playListsSet = playlistService.getPlaylistsByUserId(userId);
         for (Playlists playlist : playListsSet) {
             log.info("{} start", playlist.getPlaylistTitle());
+            // playlist 자체가 제거된 경우 예외처리 필요
             youtubeService.fileTrackAndRecover(userId, playlist.getPlaylistId(), accessToken);
         }
 
