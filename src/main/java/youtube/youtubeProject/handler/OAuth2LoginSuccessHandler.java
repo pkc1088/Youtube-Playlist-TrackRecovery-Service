@@ -52,13 +52,16 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
             if(alreadyMember(userId)) {
                 log.info("you are already a member of this service");
-
-                // added 25.03.22 ~
+                // added 25.03.25 ~ 이거 며칠 지나서 로그인하니까 에러페이지 뜸 (디비에 pkc1088 리프레쉬 토큰은 있었음)
+                // .getTokenValue() 여기서 접근하면 에러나는거임 null 일 떄
                 Users user = userService.getUserByUserId(userId);
-                String updatedRefreshToken = authorizedClient.getRefreshToken().getTokenValue();
-                if(updatedRefreshToken != null && !user.getRefreshToken().equals(updatedRefreshToken)) {
-                    user.setRefreshToken(updatedRefreshToken);
-                    log.info("refreshToken Updated");
+
+                if(authorizedClient.getRefreshToken() != null) {
+                    String updatedRefreshToken = authorizedClient.getRefreshToken().getTokenValue();
+                    if(!user.getRefreshToken().equals(updatedRefreshToken)) {
+                        user.setRefreshToken(updatedRefreshToken);
+                        log.info("refreshToken Updated");
+                    }
                 }
                 // ~ done
             } else {

@@ -1,9 +1,15 @@
 package youtube.youtubeProject.scheduler;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistListResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import youtube.youtubeProject.domain.Music;
@@ -54,7 +60,7 @@ public class ManagementScheduler {
         log.info("auto scheduler done");
     }
 
-    @Scheduled(fixedRate = 50000, initialDelayString = "1000")  //    @Transactional
+//    @Scheduled(fixedRate = 50000, initialDelayString = "1000")  //    @Transactional
     public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
         log.info("auto scheduler activated");
         // 0. 전체 유저 목록에서 순차적으로 유저를 뽑아 오는 시나리오 있다 치고
@@ -73,9 +79,7 @@ public class ManagementScheduler {
     }
 
 
-
-
-////    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
+//    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
 //    public void updateTest() throws IOException {
 //        System.err.println("auto scheduler activated");
 //        String playlistId = "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74";
@@ -83,12 +87,5 @@ public class ManagementScheduler {
 //        System.err.println("auto scheduler done");
 //    }
 //
-////    @Scheduled(fixedRate = 60000, initialDelayString = "3000")
-//    public void autoScheduleGeneralCustomer() throws IOException {
-//        System.err.println("auto scheduler activated");
-//        Users user = userService.getUserByUserId("112735690496635663877");
-//        String playlistId = "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74";
-//        youtubeService.fileTrackAndRecover(user.getUserId(), playlistId);
-//        System.err.println("auto scheduler done");
-//    }
+
 }

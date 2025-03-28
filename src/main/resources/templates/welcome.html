@@ -8,17 +8,19 @@
 <h1>You're Welcome Page</h1>
 <p>This is a welcome page after login</p>
 
-<h2>1. Initially Add Videos With Details To The DataBase</h2>
-<a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/initiallyAddVideoDetails}">관리될 플레이리스트아이템 최초 등록</a>
+<!--<h2>1. Initially Add Videos With Details To The DataBase</h2>-->
+<!--<a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/initiallyAddVideoDetails}">'musicList for test' 플레이리스트아이템 최초 등록</a>-->
 
-<h2>2. Initially Add All PlayLists To The DataBase</h2>
-<!--<a th:href="@{//initiallyAddVideoDetails}">관리될 플레이리스트 최초 등록</a>-->
+<h2>1. Initially Add All PlayLists To The DataBase</h2>
+<a th:href="@{/playlist/{id}(id=${userId})}">플레이리스트 관리</a>
 
+<h2>2. WhistleMissile Playlist</h2>
+<a th:href="@{/whistleMissile/playlists}">whistleMissile playlist</a>
 
 <!--<h2>2. API - See Playlists</h2>-->
 <!--<a th:href="@{/UC6SN0-0k6z1fj5LmhYHd5UA/playlists}">플레이리스트 목록 단순 조회</a>-->
-<!--UCSm9kYU0rHDamSQeoy_LBWg
-whistle_missile-->
+<!--UCSm9kYU0rHDamSQeoy_LBWg ----- whistle_missile-->
+
 <!--<h2>3. API - See Particular Playlist items</h2>-->
 <!--<a th:href="@{/PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74/getVideos}">특정 플레이리스트 내부 단순 조회</a>-->
 <!--&lt;!&ndash;PL_oN0G26h8rbshXsAoF_7GJ6LeixZNmB4&ndash;&gt; &lt;!&ndash;pkc1088 - musicListForTest&ndash;&gt;-->
