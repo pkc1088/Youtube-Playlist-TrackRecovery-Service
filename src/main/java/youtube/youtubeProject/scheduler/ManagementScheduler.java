@@ -1,15 +1,17 @@
 package youtube.youtubeProject.scheduler;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.PlaylistListResponse;
+import com.google.api.services.youtube.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import youtube.youtubeProject.domain.Music;
@@ -19,6 +21,8 @@ import youtube.youtubeProject.service.playlists.PlaylistService;
 import youtube.youtubeProject.service.users.UserService;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -79,13 +83,39 @@ public class ManagementScheduler {
     }
 
 
-//    @Scheduled(fixedRate = 30000, initialDelayString = "3000")
-//    public void updateTest() throws IOException {
-//        System.err.println("auto scheduler activated");
-//        String playlistId = "PLNj4bt23Rjfsm0Km4iNM6RSBwXXOEym74";
-//        musicService.updatePlaylist(playlistId);
-//        System.err.println("auto scheduler done");
-//    }
-//
+//    @Scheduled(fixedRate = 30000, initialDelayString = "1000")
+    public void updateTest() throws IOException {
+        String playlistId = "PLkympg9D413fblkvg_kUOlGplar3C1S62"; // cbm google
+        String accessToken = userService.getNewAccessTokenByUserId("116727139333472663777");
+        String videoId = "o6vCn2sBbBE";
+        addTemp(accessToken, playlistId, videoId, 4L);
+    }
+    public void addTemp(String accessToken, String playlistId, String videoId, long videoPosition) {
+        try {
+            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+            YouTube youtube = new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
+                    .setApplicationName("youtube-add-playlist-item")
+                    .build();
+
+            ResourceId resourceId = new ResourceId();
+            resourceId.setKind("youtube#video");
+            resourceId.setVideoId(videoId);
+            PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+            playlistItemSnippet.setPlaylistId(playlistId);
+            playlistItemSnippet.setResourceId(resourceId);
+            playlistItemSnippet.setPosition(videoPosition); // added
+            PlaylistItem playlistItem = new PlaylistItem();
+            playlistItem.setSnippet(playlistItemSnippet);
+
+            YouTube.PlaylistItems.Insert request = youtube.playlistItems().insert(Collections.singletonList("snippet"), playlistItem);
+            PlaylistItem response = request.execute();
+            log.info("completely added video({}) to {}", videoId, playlistId);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
