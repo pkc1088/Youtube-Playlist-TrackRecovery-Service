@@ -88,7 +88,7 @@ public class ManagementScheduler {
         String playlistId = "PLkympg9D413fblkvg_kUOlGplar3C1S62"; // cbm google
         String accessToken = userService.getNewAccessTokenByUserId("116727139333472663777");
         String videoId = "o6vCn2sBbBE";
-        addTemp(accessToken, playlistId, videoId, 4L);
+        addTemp(accessToken, playlistId, videoId, 4L); // 포지션 잘 맞춰야함
     }
     public void addTemp(String accessToken, String playlistId, String videoId, long videoPosition) {
         try {
