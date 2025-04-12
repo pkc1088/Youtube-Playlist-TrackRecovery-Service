@@ -35,18 +35,20 @@ public class MusicRepositoryV1 implements MusicRepository{
     }
 
     @Override
-    public Optional<Music> getMusicFromDBThruMusicId(String videoId) {
-        return repository.findByVideoId(videoId);
+    public Optional<Music> getMusicFromDBThruMusicId(String videoId, String playlistId) {
+        return repository.findByVideoIdAndPlaylistId(videoId, playlistId);
+        //        return repository.findByVideoId(videoId);
     }
 
     @Override
-    public void dBTrackAndRecover(String videoIdToDelete, Music videoToRecover) {
-
-        Optional<Music> optionalMusic = repository.findByVideoId(videoIdToDelete);
-//        log.info("Found Record : {}", optionalMusic);
+    public void dBTrackAndRecover(String videoIdToDelete, Music videoToRecover, String playlistId) {
+        Optional<Music> optionalMusic = repository.findByVideoIdAndPlaylistId(videoIdToDelete, playlistId);
+//        Optional<Music> optionalMusic = repository.findByVideoId(videoIdToDelete);
         if (optionalMusic.isPresent()) {
             Music musicToUpdate = optionalMusic.get();
+            System.err.println("PK : " + musicToUpdate.getId() + ", videoId : " + musicToUpdate.getVideoId());
             log.info("Found Record : {}", musicToUpdate.getVideoId());
+//            musicToUpdate.setId(videoToRecover.getId());
             musicToUpdate.setVideoId(videoToRecover.getVideoId());// videoToRecover의 정보로 엔티티 업데이트
             musicToUpdate.setVideoTitle(videoToRecover.getVideoTitle());
             musicToUpdate.setVideoUploader(videoToRecover.getVideoUploader());

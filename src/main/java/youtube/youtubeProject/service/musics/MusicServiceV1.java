@@ -3,10 +3,7 @@ package youtube.youtubeProject.service.musics;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.google.api.services.youtube.model.Video;
-import com.google.api.services.youtube.model.VideoListResponse;
+import com.google.api.services.youtube.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,12 +31,30 @@ public class MusicServiceV1 implements MusicService{
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
-    public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
+//    public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
+//        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
+//        request.setKey(apiKey);
+//        request.setPlaylistId(playlistId);
+//        request.setMaxResults(maxResults);
+//        return request.execute();
+//    }
+
+    public List<PlaylistItem> getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
         request.setKey(apiKey);
         request.setPlaylistId(playlistId);
         request.setMaxResults(maxResults);
-        return request.execute();
+        // page
+        List<PlaylistItem> allPlaylists = new ArrayList<>();
+        String nextPageToken = null;
+        do {
+            request.setPageToken(nextPageToken); // 다음 페이지 토큰 설정
+            PlaylistItemListResponse response = request.execute();
+            allPlaylists.addAll(response.getItems());
+            nextPageToken = response.getNextPageToken();
+        } while (nextPageToken != null); // 더 이상 페이지가 없을 때까지 반복
+
+        return allPlaylists;
     }
 
     public Video getVideoDetailResponseWithFilter(String videoId) throws IOException {
@@ -58,11 +73,12 @@ public class MusicServiceV1 implements MusicService{
         }
     }
 
+    // page 로 읽어들여야함
     @Override
     public void initiallyAddVideoDetails(String playlistId) throws IOException {
-        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
-
-        for (PlaylistItem item : response.getItems()) {
+//        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
+        List<PlaylistItem> response = getPlaylistItemListResponse(playlistId, 50L);
+        for (PlaylistItem item : response) { // .getItems() 제거했음
             String videoId = item.getSnippet().getResourceId().getVideoId();
             DBAddAction(videoId, playlistId);
         }
@@ -87,6 +103,7 @@ public class MusicServiceV1 implements MusicService{
         }
     }
 
+    // page 로 읽어들여야함
     @Override
     public void updatePlaylist(String playlistId) throws IOException {
         log.info("update playlist start ... {}", playlistId);
@@ -96,9 +113,11 @@ public class MusicServiceV1 implements MusicService{
         Set<String> musicDBSet = musicDBList.stream().map(Music::getVideoId).collect(Collectors.toSet());
 
         // 2. API 검색으로 고객 플레이리스트 목록 불러오기
-        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
+//        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
+        List<PlaylistItem> response = getPlaylistItemListResponse(playlistId, 50L);
+
         List<String> apiMusicList = new ArrayList<>();
-        for (PlaylistItem item : response.getItems()) {
+        for (PlaylistItem item : response) { // .getItems() 제거했음
             String videoId = item.getSnippet().getResourceId().getVideoId();
             apiMusicList.add(videoId);
         }

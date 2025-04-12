@@ -53,17 +53,6 @@ public class ManagementScheduler {
         System.out.println(text);
     }
 
-
-//    @Scheduled(fixedRate = 30000, initialDelayString = "1000")
-    public void allAddScenarioToOnePerson() throws IOException {
-        log.info("auto scheduler activated");
-        // 1. 회원 등록은 이미 했음 (회원가입 시)
-        String userId  = "112735690496635663877";
-        // 2. 플레이리스트 & 음악 모두 등록
-//        playlistService.registerPlaylists(userId); selectedPlaylists 로 줘야함 (변경됐음)
-        log.info("auto scheduler done");
-    }
-
 //    @Scheduled(fixedRate = 50000, initialDelayString = "1000")  //    @Transactional
     public void allPlaylistsRecoveryOfOneParticularUserTest() throws IOException {
         log.info("auto scheduler activated");
@@ -119,3 +108,13 @@ public class ManagementScheduler {
     }
 
 }
+
+//    //    @Scheduled(fixedRate = 30000, initialDelayString = "1000")
+//    public void allAddScenarioToOnePerson() throws IOException {
+//        log.info("auto scheduler activated");
+//        // 1. 회원 등록은 이미 했음 (회원가입 시)
+//        String userId  = "112735690496635663877";
+//        // 2. 플레이리스트 & 음악 모두 등록
+////        playlistService.registerPlaylists(userId); selectedPlaylists 로 줘야함 (변경됐음)
+//        log.info("auto scheduler done");
+//    }

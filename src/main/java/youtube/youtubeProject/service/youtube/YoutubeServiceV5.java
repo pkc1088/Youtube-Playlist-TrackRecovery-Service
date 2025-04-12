@@ -42,14 +42,31 @@ public class YoutubeServiceV5 implements YoutubeService {
         youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
     }
 
-    public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
+//    public PlaylistItemListResponse getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
+//        YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
+//        request.setKey(apiKey);
+//        request.setPlaylistId(playlistId);
+//        request.setMaxResults(maxResults);
+//        return request.execute();
+//    }
+
+    public List<PlaylistItem> getPlaylistItemListResponse(String playlistId, Long maxResults) throws IOException { // 내부에서 호출해야함
         YouTube.PlaylistItems.List request = youtube.playlistItems().list(Collections.singletonList("snippet, id, status"));
         request.setKey(apiKey);
         request.setPlaylistId(playlistId);
         request.setMaxResults(maxResults);
-        return request.execute();
-    }
+        // page
+        List<PlaylistItem> allPlaylists = new ArrayList<>();
+        String nextPageToken = null;
+        do {
+            request.setPageToken(nextPageToken); // 다음 페이지 토큰 설정
+            PlaylistItemListResponse response = request.execute();
+            allPlaylists.addAll(response.getItems());
+            nextPageToken = response.getNextPageToken();
+        } while (nextPageToken != null); // 더 이상 페이지가 없을 때까지 반복
 
+        return allPlaylists;
+    }
 
     @Override
     public void fileTrackAndRecover(String userId, String playlistId, String accessToken) throws IOException {
@@ -69,7 +86,7 @@ public class YoutubeServiceV5 implements YoutubeService {
             //System.err.println("Tracked Illegal Music (" + videoIdToDelete + ") at index " + videoPosition);
             log.info("Tracked Illegal Music ({}) at index {}", videoIdToDelete, videoPosition);
         // 4. DB 에서 videoId로 검색해서 백업된 Music 객체를 가져옴
-            Optional<Music> optionalBackUpMusic = musicRepository.getMusicFromDBThruMusicId(videoIdToDelete);
+            Optional<Music> optionalBackUpMusic = musicRepository.getMusicFromDBThruMusicId(videoIdToDelete, playlistId);
             Music backupMusic = optionalBackUpMusic.orElse(null);
         // 5. 그 Music 으로 유튜브에 검색을 함 search 해서 return 받음
             if(backupMusic == null) {
@@ -81,19 +98,22 @@ public class YoutubeServiceV5 implements YoutubeService {
         // 7. backupMusic 이 null 이 아니면 백업된 영상임 (search 알고리즘 강화 필요)
             Music videoForRecovery = searchVideoToReplace(backupMusic, playlistId);
         // 8. DB를 업데이트한다 CRUD 동작은 service 가 아니라 repository 가 맡아서 한다.
-            musicRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery);
+            musicRepository.dBTrackAndRecover(videoIdToDelete, videoForRecovery, playlistId);
         // 9. 실제 유튜브 플레이리스트에도 add 와 delete
             addVideoToActualPlaylist(accessToken, playlistId, videoForRecovery.getVideoId(), videoPosition);
             deleteFromActualPlaylist(accessToken, playlistId, videoIdToDelete);
         }
     }
 
+    // page 로 읽어들여야함
     public Map<String, Long> getIllegalPlaylistItemList(String playlistId) throws IOException {
 
-        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
+//        PlaylistItemListResponse response = getPlaylistItemListResponse(playlistId, 50L);
+        List<PlaylistItem> response = getPlaylistItemListResponse(playlistId, 50L);
+
         Map<String, Long> videos = new HashMap<>();
 
-        for (PlaylistItem item : response.getItems()) {
+        for (PlaylistItem item : response) {
             String videoId = item.getSnippet().getResourceId().getVideoId();
             String videoTitle = item.getSnippet().getTitle();
             String videoPrivacyStatus = item.getStatus().getPrivacyStatus();
@@ -168,6 +188,7 @@ public class YoutubeServiceV5 implements YoutubeService {
         }
     }
 
+    // page 로 읽어들여야함
     // 불필요한 동작 수정 필요
     public void deleteFromActualPlaylist(String accessToken, String playlistId, String videoId) {
         try {
@@ -181,8 +202,19 @@ public class YoutubeServiceV5 implements YoutubeService {
             playlistItemsRequest.setPlaylistId(playlistId);
             playlistItemsRequest.setMaxResults(50L);
 
-            PlaylistItemListResponse playlistItemsResponse = playlistItemsRequest.execute();
-            List<PlaylistItem> playlistItems = playlistItemsResponse.getItems();
+//            PlaylistItemListResponse playlistItemsResponse = playlistItemsRequest.execute();
+//            List<PlaylistItem> playlistItems = playlistItemsResponse.getItems();
+
+            // page
+            List<PlaylistItem> playlistItems = new ArrayList<>();
+            String nextPageToken = null;
+            do {
+                playlistItemsRequest.setPageToken(nextPageToken); // 다음 페이지 토큰 설정
+                PlaylistItemListResponse response = playlistItemsRequest.execute();
+                playlistItems.addAll(response.getItems());
+                nextPageToken = response.getNextPageToken();
+            } while (nextPageToken != null); // 더 이상 페이지가 없을 때까지 반복
+
 
             // 영상 ID와 일치하는 재생목록 항목을 찾음
             for (PlaylistItem playlistItem : playlistItems) {
