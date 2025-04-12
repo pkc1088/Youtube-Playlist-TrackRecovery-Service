@@ -60,7 +60,7 @@ public class ManagementScheduler {
         // 1. 회원 등록은 이미 했음 (회원가입 시)
         String userId  = "112735690496635663877";
         // 2. 플레이리스트 & 음악 모두 등록
-        playlistService.registerPlaylists(userId);
+//        playlistService.registerPlaylists(userId); selectedPlaylists 로 줘야함 (변경됐음)
         log.info("auto scheduler done");
     }
 

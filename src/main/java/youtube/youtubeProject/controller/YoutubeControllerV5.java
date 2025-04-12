@@ -7,9 +7,14 @@ import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistListResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import youtube.youtubeProject.domain.Users;
+import youtube.youtubeProject.repository.users.UserRepository;
+import youtube.youtubeProject.service.playlists.PlaylistService;
 import youtube.youtubeProject.service.users.UserService;
 import youtube.youtubeProject.service.youtube.YoutubeService;
 
@@ -25,7 +30,8 @@ public class YoutubeControllerV5 {
 
     private final YoutubeService youtubeService;
     private final UserService userService;
-
+    private final PlaylistService playlistService;
+    private final UserRepository userRepository;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -42,41 +48,62 @@ public class YoutubeControllerV5 {
         return "welcome";
     }
 
+    @GetMapping("/playlist")
+    public String redirectToUserPlaylist(@AuthenticationPrincipal OAuth2User principal) {
+        return "redirect:/playlist/" + principal.getName();
+    }
 
     @GetMapping("/playlist/{userId}") // for user display
-    public String userRegisterPlaylists(@PathVariable String userId, Model model) {
-
-        return "redirect:/welcome";
-    }
-
-    @GetMapping("/whistleMissile/playlists") // - just for test
-    public String getPlaylists(Model model) throws IOException {
-        List<Playlist> playlists = getAllPlaylists();
+    public String userRegisterPlaylists(@PathVariable String userId, Model model) throws IOException {
+        List<Playlist> playlists = playlistService.getAllPlaylists(userId);
+        model.addAttribute("userId", userId);
         model.addAttribute("playlists", playlists);
-        return "playlists";
+        System.err.println("userRegisterPlaylists : " + userId);
+        return "playlist_selection"; // 체크박스 뷰 템플릿
     }
 
-    public List<Playlist> getAllPlaylists() throws IOException {
-        YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {
-        }).setApplicationName("youtube").build();
-        List<Playlist> allPlaylists = new ArrayList<>();
-        String nextPageToken = null;
-        do {
-            YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, contentDetails"));
+    @PostMapping("/playlist/register")
+    public String registerSelectedPlaylists(@RequestParam String userId,
+                                            @RequestParam(name = "selectedPlaylistIds", required = false) List<String> selectedPlaylistIds,
+                                            Model model) throws IOException {
 
-            request.setKey("AIzaSyBxCTt9LEpU9Rb8AgUSW0lj-Z36_k-ysIQ");
-            request.setChannelId("UCSm9kYU0rHDamSQeoy_LBWg");
-            request.setMaxResults(50L); // API의 최대 허용값 (50)
-            request.setPageToken(nextPageToken); // 다음 페이지 토큰 설정
-            PlaylistListResponse response = request.execute();
-            allPlaylists.addAll(response.getItems());
-
-            nextPageToken = response.getNextPageToken();
-        } while (nextPageToken != null); // 더 이상 페이지가 없을 때까지 반복
-
-        return allPlaylists;
+        if (selectedPlaylistIds != null && !selectedPlaylistIds.isEmpty()) {
+            playlistService.registerPlaylists(userId, selectedPlaylistIds);
+        }
+        log.info("재생목록 등록 완료");
+        return "redirect:/welcome"; // 혹은 등록된 목록 보는 페이지로 이동
     }
+
+
+
+//    @GetMapping("/whistleMissile/playlists") // - just for test
+//    public String getPlaylists(Model model) throws IOException {
+//        List<Playlist> playlists = playlistService.getAllPlaylists("UC6SN0-0k6z1fj5LmhYHd5UA"); // pkc1088
+//        model.addAttribute("playlists", playlists);
+//        return "playlists";
+//    }
+
+//    public List<Playlist> getAllPlaylists() throws IOException {
+//        YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), request -> {}).setApplicationName("youtube").build();
+//        List<Playlist> allPlaylists = new ArrayList<>();
+//        String nextPageToken = null;
+//        do {
+//            YouTube.Playlists.List request = youtube.playlists().list(Collections.singletonList("snippet, contentDetails"));
+//
+//            request.setKey("AIzaSyBxCTt9LEpU9Rb8AgUSW0lj-Z36_k-ysIQ");
+//            request.setChannelId("UCSm9kYU0rHDamSQeoy_LBWg");
+//            request.setMaxResults(50L); // API의 최대 허용값 (50)
+//            request.setPageToken(nextPageToken); // 다음 페이지 토큰 설정
+//            PlaylistListResponse response = request.execute();
+//            allPlaylists.addAll(response.getItems());
+//
+//            nextPageToken = response.getNextPageToken();
+//        } while (nextPageToken != null); // 더 이상 페이지가 없을 때까지 반복
+//
+//        return allPlaylists;
+//    }
 }
+
 //    @GetMapping("/mySignup")
 //    public String signup() {
 //        return "redirect:/oauth2/authorization/google?prompt=consent&access_type=offline";
